@@ -7,13 +7,13 @@ import java.util.logging.Logger;
 public class ClientReceiveThread extends Thread {
 
 	private final InputStream inputStream;
-	private Socket client;
+	private Socket clientSocket;
 	private String msg;
 	private Boolean closed = false;
 
-	public ClientReceiveThread(Socket client, InputStream inputStream) {
+	public ClientReceiveThread(Socket sc, InputStream inputStream) {
 		this.inputStream = inputStream;
-		this.client = client;
+		this.clientSocket = sc;
 	}
 
 	public void exit() {
@@ -26,7 +26,7 @@ public class ClientReceiveThread extends Thread {
 		// Fermer la connexion
 		try {
 			this.inputStream.close();
-			this.client.close();
+			this.clientSocket.close();
 		} catch (IOException ex) { 
             Logger.getLogger(ClientReceiveThread.class.getName()).log(Level.SEVERE, null, ex);
         } 

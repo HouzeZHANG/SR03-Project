@@ -5,13 +5,13 @@ import java.net.Socket;
 public class ClientChat {
     public static void main(String[] args) {
         try{
-            Socket client = new Socket ("localhost", 10087);
-            System.out.println("Connecté : " + client);
-            OutputStream out = client.getOutputStream();
-            InputStream in = client.getInputStream();
+            Socket clientSocket = new Socket ("localhost", 10087);
+            System.out.println("Connecté : " + clientSocket);
+            OutputStream out = clientSocket.getOutputStream();
+            InputStream in = clientSocket.getInputStream();
 
             ClientSendThread sendThread = new ClientSendThread(out);
-		    ClientReceiveThread receiveThread = new ClientReceiveThread(client, in);
+		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket, in);
             sendThread.start();
             receiveThread.start();
 
