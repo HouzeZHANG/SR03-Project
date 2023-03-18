@@ -7,7 +7,6 @@ import java.util.Hashtable;
 public class ServeurChat {
 
     private static Hashtable<ServeurMessageReceptor, String> clients = new Hashtable<ServeurMessageReceptor, String>();
-    private static int nb_client = 0;
     private static final int PORT = 10087;
     private static ServerSocket serverSocket;
     public static void main(String[] args) {
@@ -25,8 +24,7 @@ public class ServeurChat {
 			        clients.put(newMessageReceptor, "");
                     // lance le thread
 			        newMessageReceptor.start();
-                    nb_client++;
-                    System.out.println("[Serveur] Connecxion établie avec un client, " + nb_client + " clients en ligne.");
+                    System.out.println("[Serveur] Connexion établie avec un client, " + clients.size() + " clients en ligne.");
                 }
             }
         } catch (Exception e) {

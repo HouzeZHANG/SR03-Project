@@ -5,6 +5,8 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ServeurMessageReceptor extends Thread {
 	private Hashtable<ServeurMessageReceptor, String> clients = new Hashtable<ServeurMessageReceptor, String>();
@@ -26,15 +28,15 @@ public class ServeurMessageReceptor extends Thread {
 
 	public void exit() {
 		try {
-			System.out.println(this.clientName + " se déconnecte.");
 			clients.remove(this);
+			System.out.println(this.clientName + " se déconnecte, "+ clients.size() + " clients en ligne.");
 			synchronized (this) {
 				if (!clients.isEmpty()) {
 					for (ServeurMessageReceptor clientSMR : clients.keySet()) {
 						if (clientSMR != null && clientSMR != this && clientSMR.clientName != null) {
 							try {
 								this.send(clientSMR,
-										new String("*** " + this.clientName.trim() + " a quitté la conversation ***"));
+										new String(this.clientName.trim() + " a quitté la conversation"));
 							} catch (IOException ex) { 
 								Logger.getLogger(ServeurMessageReceptor.class.getName()).log(Level.SEVERE, null, ex);
 							} 
@@ -55,10 +57,11 @@ public class ServeurMessageReceptor extends Thread {
 		synchronized (this) {
 			for (ServeurMessageReceptor clientSMR : clients.keySet()) {
 				if (clientSMR != null && clientSMR.clientName != null && clientSMR.clientName != this.clientName) {
-					this.send(clientSMR, new String(clientName + " a dit : " + msg));
+					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+					this.send(clientSMR, new String("["+ currentTime +"]"+"[" + clientName.trim() + "] " + msg));
 				}
 			}
-			System.out.println("Broadcast message a été envoyé par " + this.clientName.trim());
+			System.out.println(this.clientName.trim() + " a envoyé un message");
 		}
 	}
 
@@ -70,7 +73,7 @@ public class ServeurMessageReceptor extends Thread {
 			String clientName;
 			// Assurer qu'il n'y a qu'un seul thread qui utilise cet objet
 			synchronized (this) {
-				this.send(this, new String("Entrer votre pseudonyme :"));
+				this.send(this, new String("Entrer votre pseudo :"));
 				InputStream in = this.clientSocket.getInputStream();
 				boolean isClientNameInitialized = false;
 				while (!isClientNameInitialized) {
@@ -78,12 +81,11 @@ public class ServeurMessageReceptor extends Thread {
 						byte b[] = new byte[200];
 						inputStream.read(b);
 						clientName= new String(b);
-						if ((clientName.indexOf('@') == -1) || (clientName.indexOf('!') == -1)
-								|| this.clients.containsValue(clientName)) {
-
+						if (((clientName.indexOf('@') == -1) || (clientName.indexOf('!') == -1)
+								|| this.clients.containsValue(clientName)) && !clientName.contains("exit")) {
 							if (this.clients.containsValue(clientName)) {
 								this.send(this,
-										new String("Votre pseudo a été utilisé. Nouveau pseudonyme : "));
+										new String("Votre pseudo a déja été utilisé. Veuillez réessayer : "));
 								continue;
 							} else {
 								this.clients.put(this, clientName);
@@ -91,7 +93,7 @@ public class ServeurMessageReceptor extends Thread {
 								isClientNameInitialized = true;
 							}
 						} else {
-							this.outputStream.write(("Le pseudo ne devrait pas contenir '@' ou '!'.").getBytes());
+							this.outputStream.write(("Le format de pseudo n'est pas valide. Veuillez réessayer : ").getBytes());
 							this.outputStream.flush();
 						}
 					}
@@ -103,14 +105,15 @@ public class ServeurMessageReceptor extends Thread {
 			}
 			System.out.println("Pseudo de nouveau client : " + this.clientName.trim());
 			this.send(this, new String(
-					this.clientName.trim() + " a rejoint la conversation. Tapez 'exit' pour se déconnecter \n"));
+					"Vous(pseudo: " + this.clientName.trim() + ") avez rejoint la conversation.\nTapez 'exit' pour se déconnecter.\n"));
 			this.send(this,
-					new String("------------------------------------------------------------------------------"));
+					new String("-----------------------------------------------------"));
+
 			// Annoncer aux autres clients
 			synchronized (this) {
 				for (ServeurMessageReceptor clientSMR : clients.keySet()) {
 					if (clientSMR != null && clientSMR != this) {
-						this.send(clientSMR, new String(this.clientName.trim() + " a rejoint la conversation"));
+						this.send(clientSMR, new String(this.clientName.trim() + " a rejoint la conversation."));
 					}
 				}
 			}
@@ -119,16 +122,16 @@ public class ServeurMessageReceptor extends Thread {
 				byte b[] = new byte[200];
 				inputStream.read(b);
 				String msg = new String(b);
-					if (msg.startsWith("exit")) {
+					if (msg.startsWith("exit") || msg.startsWith("^C%")) {
 						this.closed = true;
 						break;
 					} else {
 						broadcast(msg, this.clientName);
 					}
 			}
-			// Terminer la session
+			// Confirme la terminaison de la session en envoyant un ack
 			if (this.closed) {
-				this.send(this, new String("Vous avez quitté la conversation"));
+				this.send(this, new String("ACKUSEREXIT"));
 				exit();
 			}
 		} catch (IOException e) {

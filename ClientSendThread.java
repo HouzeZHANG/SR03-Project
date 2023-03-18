@@ -23,6 +23,7 @@ public class ClientSendThread extends Thread {
             Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        // Ferme la connexion
 		try {
 			this.outputStream.close();
 		} catch (IOException ex) { 
@@ -31,27 +32,27 @@ public class ClientSendThread extends Thread {
 	}
 
 	public void run() {
-		while (!this.closed) {
-			synchronized (this) {
-				String msg = sc.nextLine();
-				if (msg != null) {
-					try {
-						this.send(msg);
-						if (msg.equals("exit")) {
-							this.closed = true;
-							break;
-						}
-					} catch (IOException ex) {
-						Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
-						System.out.println("Échoué à envoyer le message. ");
-						break;
-					}
-				}
-			}
-		}
-		if (this.closed) {
-			exit();
-		}
-
-	}
+            while (!this.closed) {
+                synchronized (this) {
+                    String msg = sc.nextLine();
+                    if (msg != null) {
+                        try {
+                            this.send(msg);
+                            System.out.println("");
+                            if (msg.equals("exit")) {
+                                this.closed = true;
+                                break;
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
+                            System.out.println("Erreur: Default envoie");
+                            break;
+                        }
+                    }
+                }
+            }
+            if (this.closed) {
+                exit();
+            }
+    }
 }

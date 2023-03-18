@@ -42,9 +42,9 @@ public class ClientReceiveThread extends Thread {
                     this.msg = new String(b);
 					if (this.msg != "") {
 						synchronized (this) {
-							// Quitter la boucle si le socket a fermé, sinon afficher le message sur la console
-							if (this.msg.equals("Vous avez quitté la conversation")) {
-								System.out.println("Merci pour votre utilisation !");
+							// Apres avoir recu la confirmation du serveur, quitter le boucle et terminer le programme
+							if (this.msg.startsWith("ACKUSEREXIT")) {
+								System.out.println("Vous avez quitté la conversation. Merci pour votre utilisation !");
 								this.closed = true;
 								break;
 							} else {
@@ -55,7 +55,7 @@ public class ClientReceiveThread extends Thread {
 					}
 				} catch (IOException ex) {
 					exit();
-					System.out.println("Erreur message");
+					System.out.println("Erreur: Message invalide");
 					break;
 				}
 			}
@@ -64,7 +64,7 @@ public class ClientReceiveThread extends Thread {
 			}
 		} catch (Exception ex) { 
             Logger.getLogger(ClientReceiveThread.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Déconnexion serveur");
+            System.out.println("Erreur: Déconnexion serveur");
         } 
 	}
 }
