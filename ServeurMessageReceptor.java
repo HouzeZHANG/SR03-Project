@@ -65,6 +65,26 @@ public class ServeurMessageReceptor extends Thread {
 		}
 	}
 
+	private void unicast(String msg, String clientName) throws IOException, ClassNotFoundException {
+		String dest = msg.substring(msg.indexOf("@")+1, msg.indexOf(" "));
+		String msg_dest = msg.substring(msg.indexOf(" ")+1);
+		synchronized (this) {
+			boolean ok = false;
+			for (ServeurMessageReceptor clientSMR : clients.keySet()) {
+				System.out.println("de"+clientSMR.clientName+"bug");
+				if (clientSMR.clientName.trim().equals(dest)) {
+					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+					this.send(clientSMR, new String("["+ currentTime +"]"+"[" + clientName.trim() + "(msg privé)] " + msg_dest));
+					System.out.println(this.clientName.trim() + " a envoyé un message privé à " + dest);
+					ok = true;
+				}
+			}
+			if(!ok){
+				this.send(this, new String("Utilisateur "+ dest + " n'existe pas"));
+			}
+		}
+	}
+
 	@Override
 	public void run() {
 		try {
@@ -122,9 +142,11 @@ public class ServeurMessageReceptor extends Thread {
 				byte b[] = new byte[200];
 				inputStream.read(b);
 				String msg = new String(b);
-					if (msg.startsWith("exit") || msg.startsWith("^C%")) {
+					if (msg.startsWith("exit")) {
 						this.closed = true;
 						break;
+					} else if (msg.startsWith("@")){
+						unicast(msg, this.clientName);
 					} else {
 						broadcast(msg, this.clientName);
 					}
