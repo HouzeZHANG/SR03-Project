@@ -10,21 +10,21 @@ import java.util.logging.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ServeurMessageReceptor extends Thread {
-	private Hashtable<ServeurMessageReceptor, String> clients;
+public class SocketThread extends Thread {
+	private Hashtable<SocketThread, String> clients;
 	private Socket clientSocket;
 	private String clientName;
 	private InputStream inputStream = null;
 	private OutputStream outputStream = null;
 	private Boolean closed = false;
 
-	public ServeurMessageReceptor(Socket clientSocket, Hashtable<ServeurMessageReceptor, String> clients) {
+	public SocketThread(Socket clientSocket, Hashtable<SocketThread, String> clients) {
 		this.clientSocket = clientSocket;
 		this.clients = clients;
 		this.clientName = "";
 	}
 
-	public void send(ServeurMessageReceptor destination, String str) throws IOException {
+	public void send(SocketThread destination, String str) throws IOException {
 		destination.outputStream.write(str.getBytes());
 	}
 
@@ -34,13 +34,13 @@ public class ServeurMessageReceptor extends Thread {
 			System.out.println(this.clientName + " se déconnecte, "+ clients.size() + " clients en ligne.");
 			synchronized (this) {
 				if (!clients.isEmpty()) {
-					for (ServeurMessageReceptor clientSMR : clients.keySet()) {
+					for (SocketThread clientSMR : clients.keySet()) {
 						if (clientSMR != null && clientSMR != this && clientSMR.clientName != null) {
 							try {
 								this.send(clientSMR,
 										new String(this.clientName.trim() + " a quitté la conversation"));
 							} catch (IOException ex) { 
-								Logger.getLogger(ServeurMessageReceptor.class.getName()).log(Level.SEVERE, null, ex);
+								Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, ex);
 							} 
 						}
 					}
@@ -51,13 +51,13 @@ public class ServeurMessageReceptor extends Thread {
 			this.outputStream.close();
 			this.clientSocket.close();
 		} catch (IOException ex) { 
-			Logger.getLogger(ServeurMessageReceptor.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, ex);
 		} 
 	}
 
 	private void broadcast(String msg, String clientName) throws IOException, ClassNotFoundException {
 		synchronized (this) {
-			for (ServeurMessageReceptor clientSMR : clients.keySet()) {
+			for (SocketThread clientSMR : clients.keySet()) {
 				if (clientSMR != null && clientSMR.clientName != null && clientSMR.clientName != this.clientName) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 					this.send(clientSMR, new String("["+ currentTime +"]"+"[" + clientName.trim() + "] " + msg));
@@ -72,7 +72,7 @@ public class ServeurMessageReceptor extends Thread {
 		String msg_dest = msg.substring(msg.indexOf(" ")+1);
 		synchronized (this) {
 			boolean ok = false;
-			for (ServeurMessageReceptor clientSMR : clients.keySet()) {
+			for (SocketThread clientSMR : clients.keySet()) {
 				System.out.println("de"+clientSMR.clientName+"bug");
 				if (clientSMR.clientName.trim().equals(dest)) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
@@ -133,7 +133,7 @@ public class ServeurMessageReceptor extends Thread {
 
 			// Annoncer aux autres clients
 			synchronized (this) {
-				for (ServeurMessageReceptor clientSMR : clients.keySet()) {
+				for (SocketThread clientSMR : clients.keySet()) {
 					if (clientSMR != null && clientSMR != this) {
 						this.send(clientSMR, new String(this.clientName.trim() + " a rejoint la conversation."));
 					}
@@ -163,9 +163,9 @@ public class ServeurMessageReceptor extends Thread {
 			System.out.println("La session de " + this.clientName.trim() + " a terminé.");
 
 		} catch (ClassNotFoundException e) {
-			Logger.getLogger(ServeurMessageReceptor.class.getName()).log(Level.SEVERE, null, e);
+			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, e);
 		} catch (InterruptedException e) {
-			Logger.getLogger(ServeurMessageReceptor.class.getName()).log(Level.SEVERE, null, e);
+			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, e);
 		}
 	}
 

@@ -7,12 +7,17 @@ import java.util.logging.Logger;
 import java.util.Hashtable;
 
 public class ServeurChat {
-
-    private static Hashtable<ServeurMessageReceptor, String> clients = new Hashtable<ServeurMessageReceptor, String>();
-    private static final int PORT = 10087;
+    // hashtable est thread-safe, peut etre utilisee par plusieurs socketsThreads
+    private static Hashtable<SocketThread, String> socketThreadToID = new Hashtable<SocketThread, String>();
+    private static int PORT;
     private static ServerSocket serverSocket;
+
+    /**
+     * @param args port du serveur à utiliser
+     */
     public static void main(String[] args) {
         try {
+            PORT = Integer.parseInt(args[0]);
             System.out.println("[Serveur] Attente de connexion depuis le port " + PORT);
             serverSocket = new ServerSocket(PORT);
 
@@ -21,12 +26,12 @@ public class ServeurChat {
                 Socket comm = serverSocket.accept();
                 if (comm.isConnected()){
                     // creation d'un nouveau thread
-                    ServeurMessageReceptor newMessageReceptor = new ServeurMessageReceptor(comm, clients);
+                    SocketThread socketThread = new SocketThread(comm, socketThreadToID);
                     // stocke le message receptor dans le tableau
-			        clients.put(newMessageReceptor, "");
+			        socketThreadToID.put(socketThread, "");
                     // lance le thread
-			        newMessageReceptor.start();
-                    System.out.println("[Serveur] Connexion établie avec un client, " + clients.size() + " clients en ligne.");
+			        socketThread.start();
+                    System.out.println("[Serveur] Connexion établie avec un client, " + socketThreadToID.size() + " clients en ligne.");
                 }
             }
         } catch (Exception e) {
