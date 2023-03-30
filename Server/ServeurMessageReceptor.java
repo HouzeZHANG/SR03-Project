@@ -1,3 +1,5 @@
+package Server;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ServeurMessageReceptor extends Thread {
-	private Hashtable<ServeurMessageReceptor, String> clients = new Hashtable<ServeurMessageReceptor, String>();
+	private Hashtable<ServeurMessageReceptor, String> clients;
 	private Socket clientSocket;
 	private String clientName;
 	private InputStream inputStream = null;

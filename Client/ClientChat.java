@@ -1,3 +1,5 @@
+package Client;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,7 +32,7 @@ public class ClientChat {
             receiveThread.start();
 
         } catch (Exception e) {
-			System.out.println("ClientChat Error: " + e);
+			System.out.println("Client.ClientChat Error: " + e);
 		}
     }
 }
