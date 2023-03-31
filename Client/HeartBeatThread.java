@@ -37,5 +37,4 @@ public class HeartBeatThread extends Thread{
             }
         }
     }
-
 }

@@ -1,12 +1,12 @@
 package Client;
 
+import EnumLib.Ack;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import Server.util.UserExitAck;
 
 
 /**
@@ -54,7 +54,7 @@ public class ClientReceiveThread extends Thread {
 					msg = readMessage();
 					if (!msg.equals("")) {
 						// Apres avoir recu la confirmation du serveur, quitter le boucle et terminer le programme
-						if (msg.startsWith(new UserExitAck().toString())) {
+						if (msg.startsWith(Ack.CLIENT_EXIT.toString())) {
 							System.out.println("Vous avez quitté la conversation. Merci pour votre utilisation !");
 							this.closed = true;
 							break;

@@ -1,5 +1,7 @@
 package Client;
 
+import EnumLib.BasicMsg;
+
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
@@ -31,11 +33,10 @@ public class ClientSendThread extends Thread {
 	}
 
 	public void run() {
+        Scanner sc = new Scanner(System.in);
         while (!this.closed) {
             // Lire le message de l'utilisateur
-            Scanner sc = new Scanner(System.in);
             String msg = sc.nextLine();
-//            sc.close();
 
             // Si le message est vide, continuer
             if (Objects.equals(msg, "")) {
@@ -44,8 +45,7 @@ public class ClientSendThread extends Thread {
 
             try {
                 this.send(msg);
-                System.out.println();
-                if (msg.equals("exit")) {
+                if (BasicMsg.EXIT.toString().equals(msg)) {
                     this.closed = true;
                 }
             } catch (IOException ex) {
@@ -55,5 +55,6 @@ public class ClientSendThread extends Thread {
             }
         }
         exit();
+        sc.close();
     }
 }

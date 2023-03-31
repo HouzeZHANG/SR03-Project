@@ -1,5 +1,7 @@
 package Client;
 
+import EnumLib.BasicMsg;
+
 import java.io.IOException;
 import java.net.Socket;
 
@@ -26,9 +28,9 @@ public class ClientChat {
             // handler called on Control-C pressed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    sendThread.send("exit");
+                    sendThread.send(BasicMsg.EXIT.toString());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("Client.ClientChat Error: " + e);
                 }
             }));
 

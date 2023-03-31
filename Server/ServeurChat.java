@@ -19,6 +19,16 @@ public class ServeurChat {
     private static int PORT;
     private static ServerSocket serverSocket;
 
+    @Override
+    public String toString() {
+        return "ServeurChat{" +
+                "socketThreadToID=" + socketThreadToID +
+                ", clientNames=" + clientNames +
+                ", PORT=" + PORT +
+                ", serverSocket=" + serverSocket +
+                '}';
+    }
+
     /**
      * @param args port du serveur à utiliser
      */

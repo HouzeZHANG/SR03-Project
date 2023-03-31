@@ -1,7 +1,7 @@
 package Server;
 
+import EnumLib.Ack;
 import EnumLib.BasicMsg;
-import Server.util.UserExitAck;
 
 import java.io.*;
 import java.net.Socket;
@@ -109,7 +109,7 @@ public class SocketThread extends Thread {
 		}
 	}
 
-	boolean pseduoValide(String pseudo) { return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1; }
+	private boolean pseduoValide(String pseudo) { return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1; }
 
 	synchronized private String readMessage() throws IOException {
 		byte[] b = new byte[200];
@@ -166,7 +166,7 @@ public class SocketThread extends Thread {
 
 			// Afficher sur le client
 			this.send(this, "Vous(pseudo: " + this.clientName.trim()
-					+ ") avez rejoint la conversation.\nTapez 'exit' pour se déconnecter.\n");
+					+ ") avez rejoint la conversation.\nTapez " + BasicMsg.EXIT + " pour se déconnecter.\n");
 			this.send(this, "-----------------------------------------------------");
 
 			// Annoncer aux autres clients
@@ -181,7 +181,7 @@ public class SocketThread extends Thread {
 				String msg = this.readMessage();
 				if (msg.startsWith(String.valueOf(BasicMsg.EXIT))) {
 					// Confirme la terminaison de la session en envoyant un ack
-					this.send(this, new UserExitAck().toString());
+					this.send(this, Ack.CLIENT_EXIT.toString());
 					exit();
 				} else if (msg.startsWith("@")){
 					unicast(msg, this.clientName);
@@ -199,5 +199,4 @@ public class SocketThread extends Thread {
 			throw new RuntimeException(e);
 		}
 	}
-
 }
