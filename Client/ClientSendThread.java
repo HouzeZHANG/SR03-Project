@@ -1,14 +1,11 @@
 package Client;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.*;
+import java.util.*;
+import java.util.logging.*;
 
 
 public class ClientSendThread extends Thread {
-	private Scanner sc = new Scanner(System.in);
 	private final OutputStream outputStream;
 	private Boolean closed = false;
 	public ClientSendThread(OutputStream outputStream) {
@@ -34,27 +31,29 @@ public class ClientSendThread extends Thread {
 	}
 
 	public void run() {
-            while (!this.closed) {
-                synchronized (this) {
-                    String msg = sc.nextLine();
-                    if (msg != null) {
-                        try {
-                            this.send(msg);
-                            System.out.println("");
-                            if (msg.equals("exit")) {
-                                this.closed = true;
-                                break;
-                            }
-                        } catch (IOException ex) {
-                            Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
-                            System.out.println("Erreur: Default envoie");
-                            break;
-                        }
-                    }
+        while (!this.closed) {
+            // Lire le message de l'utilisateur
+            Scanner sc = new Scanner(System.in);
+            String msg = sc.nextLine();
+//            sc.close();
+
+            // Si le message est vide, continuer
+            if (Objects.equals(msg, "")) {
+                continue;
+            }
+
+            try {
+                this.send(msg);
+                System.out.println();
+                if (msg.equals("exit")) {
+                    this.closed = true;
                 }
+            } catch (IOException ex) {
+                Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Erreur: Default envoie");
+                break;
             }
-            if (this.closed) {
-                exit();
-            }
+        }
+        exit();
     }
 }

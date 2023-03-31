@@ -1,66 +1,90 @@
 package Server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import Server.util.UserExitAck;
+
+import java.io.*;
 import java.net.Socket;
-import java.util.Hashtable;
-import java.util.logging.Level;
+import java.util.*;
+import java.util.logging.*;
 import java.util.logging.Logger;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+
 
 public class SocketThread extends Thread {
-	private Hashtable<SocketThread, String> clients;
-	private Socket clientSocket;
+	// create mapping between socket and client name O(1)
+	private final Hashtable<SocketThread, String> socketThreadToID;
+	// used to check if the client name is already taken O(1)
+	private final HashSet<String> nameSet;
+	private final Socket clientSocket;
 	private String clientName;
-	private InputStream inputStream = null;
-	private OutputStream outputStream = null;
+	private final InputStream inputStream;
+	private final OutputStream outputStream;
+
+	//??
 	private Boolean closed = false;
 
-	public SocketThread(Socket clientSocket, Hashtable<SocketThread, String> clients) {
+	public SocketThread(Socket clientSocket,
+						Hashtable<SocketThread, String> socketThreadToID,
+						HashSet<String> nameSet) throws IOException {
 		this.clientSocket = clientSocket;
-		this.clients = clients;
+		this.socketThreadToID = socketThreadToID;
 		this.clientName = "";
+		this.inputStream = clientSocket.getInputStream();
+		this.outputStream = clientSocket.getOutputStream();
+		this.nameSet = nameSet;
 	}
 
-	public void send(SocketThread destination, String str) throws IOException {
+	// send message to the client, used by the server, by socketThread
+	synchronized public void send(SocketThread destination, String str) throws IOException {
 		destination.outputStream.write(str.getBytes());
+		destination.outputStream.flush();
 	}
 
+	/**
+	 * before assigne the usernam, exit directly without remove the name from the nameSet
+	 * after assigne the username, exit will remove the name from the nameSet
+	 */
 	public void exit() {
 		try {
-			clients.remove(this);
-			System.out.println(this.clientName + " se déconnecte, "+ clients.size() + " clients en ligne.");
-			synchronized (this) {
-				if (!clients.isEmpty()) {
-					for (SocketThread clientSMR : clients.keySet()) {
-						if (clientSMR != null && clientSMR != this && clientSMR.clientName != null) {
-							try {
-								this.send(clientSMR,
-										new String(this.clientName.trim() + " a quitté la conversation"));
-							} catch (IOException ex) { 
-								Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, ex);
-							} 
-						}
+			// mise à jour de la liste des clients
+			socketThreadToID.remove(this);
+
+			if (Objects.equals(this.clientName, "")){
+				this.clientName = "Anonyme user";
+			}
+			else{
+				// mise à jour de la liste des noms
+				this.nameSet.remove(this.clientName);
+			}
+
+			System.out.println(this.clientName + " se déconnecte, "+ socketThreadToID.size() + " clients en ligne.");
+
+			for (SocketThread clientSMR : socketThreadToID.keySet()) {
+				// broadcast to all clients that a client has left
+				if (clientSMR != this) {
+					try {
+						this.send(clientSMR, this.clientName.trim() + " a quitté la conversation");
+					} catch (IOException ex) {
+						Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			}
+
 			// Fermer la connexion
 			this.inputStream.close();
 			this.outputStream.close();
 			this.clientSocket.close();
-		} catch (IOException ex) { 
+		} catch (IOException ex) {
 			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, ex);
 		} 
 	}
 
 	private void broadcast(String msg, String clientName) throws IOException, ClassNotFoundException {
 		synchronized (this) {
-			for (SocketThread clientSMR : clients.keySet()) {
+			for (SocketThread clientSMR : socketThreadToID.keySet()) {
 				if (clientSMR != null && clientSMR.clientName != null && clientSMR.clientName != this.clientName) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-					this.send(clientSMR, new String("["+ currentTime +"]"+"[" + clientName.trim() + "] " + msg));
+					this.send(clientSMR, "[" + currentTime + "]" + "[" + clientName.trim() + "] " + msg);
 				}
 			}
 			System.out.println(this.clientName.trim() + " a envoyé un message");
@@ -72,17 +96,67 @@ public class SocketThread extends Thread {
 		String msg_dest = msg.substring(msg.indexOf(" ")+1);
 		synchronized (this) {
 			boolean ok = false;
-			for (SocketThread clientSMR : clients.keySet()) {
+			for (SocketThread clientSMR : socketThreadToID.keySet()) {
 				System.out.println("de"+clientSMR.clientName+"bug");
 				if (clientSMR.clientName.trim().equals(dest)) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-					this.send(clientSMR, new String("["+ currentTime +"]"+"[" + clientName.trim() + "(msg privé)] " + msg_dest));
+					this.send(clientSMR, "[" + currentTime + "]" + "[" + clientName.trim() + "(msg privé)] " + msg_dest);
 					System.out.println(this.clientName.trim() + " a envoyé un message privé à " + dest);
 					ok = true;
 				}
 			}
 			if(!ok){
-				this.send(this, new String("Utilisateur "+ dest + " n'existe pas"));
+				this.send(this, "Utilisateur " + dest + " n'existe pas");
+			}
+		}
+	}
+
+	boolean pseduoValide(String pseudo) {
+		System.out.println(pseudo);
+		System.out.println(pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1);
+		return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1;
+	}
+
+	synchronized private String readMessage() throws IOException {
+		byte[] b = new byte[200];
+		this.inputStream.read(b);
+		return new String(b);
+	}
+
+	private void setUserName() throws IOException, InterruptedException {
+		while(true){
+			this.send(this, "Entrez votre pseudo :\n");
+			System.out.println("Waiting for client to enter a username");
+
+			while(this.inputStream.available() <= 0){
+				Thread.sleep(100);
+			}
+			// Lire le pseudo
+			this.clientName = this.readMessage().trim();
+			System.out.println("Client name is " + this.clientName);
+
+			// Vérifier si le client veut quitter
+			if (this.clientName.equals("exit")) {
+				this.exit();
+				return;
+			}
+
+			// Vérifier si le pseudo est valide
+			if (pseduoValide(this.clientName)) {
+				// O(1) pour vérifier si le pseudo est déjà pris
+				if (!this.nameSet.contains(this.clientName)) {
+					// O(1) pour ajouter le pseudo à la hashmap
+					this.socketThreadToID.put(this, this.clientName);
+					// O(1) pour ajouter le pseudo à la liste des pseudos
+					this.nameSet.add(this.clientName);
+					return;
+				}
+				else {
+					this.send(this, "Votre pseudo a déja été utilisé. Veuillez réessayer : ");
+				}
+			}
+			else {
+				this.send(this, "Le format de pseudo n'est pas valide. Veuillez réessayer : ");
 			}
 		}
 	}
@@ -90,73 +164,36 @@ public class SocketThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			this.inputStream = clientSocket.getInputStream();
-			this.outputStream = clientSocket.getOutputStream();
-			String clientName;
 			// Assurer qu'il n'y a qu'un seul thread qui utilise cet objet
-			synchronized (this) {
-				this.send(this, new String("Entrer votre pseudo :"));
-				InputStream in = this.clientSocket.getInputStream();
-				boolean isClientNameInitialized = false;
-				while (!isClientNameInitialized) {
-					if (in.available() > 0) {
-						byte b[] = new byte[200];
-						inputStream.read(b);
-						clientName= new String(b);
-						if (((clientName.indexOf('@') == -1) || (clientName.indexOf('!') == -1)
-								|| this.clients.containsValue(clientName)) && !clientName.contains("exit")) {
-							if (this.clients.containsValue(clientName)) {
-								this.send(this,
-										new String("Votre pseudo a déja été utilisé. Veuillez réessayer : "));
-								continue;
-							} else {
-								this.clients.put(this, clientName);
-								this.clientName = clientName;
-								isClientNameInitialized = true;
-							}
-						} else {
-							this.outputStream.write(("Le format de pseudo n'est pas valide. Veuillez réessayer : ").getBytes());
-							this.outputStream.flush();
-						}
-					}
-					else {
-						Thread.sleep(10);
-					}
+			setUserName();
 
-				}
-			}
+			// Afficher sur le serveur
 			System.out.println("Pseudo de nouveau client : " + this.clientName.trim());
-			this.send(this, new String(
-					"Vous(pseudo: " + this.clientName.trim() + ") avez rejoint la conversation.\nTapez 'exit' pour se déconnecter.\n"));
-			this.send(this,
-					new String("-----------------------------------------------------"));
+
+			// Afficher sur le client
+			this.send(this, "Vous(pseudo: " + this.clientName.trim()
+					+ ") avez rejoint la conversation.\nTapez 'exit' pour se déconnecter.\n");
+			this.send(this, "-----------------------------------------------------");
 
 			// Annoncer aux autres clients
-			synchronized (this) {
-				for (SocketThread clientSMR : clients.keySet()) {
-					if (clientSMR != null && clientSMR != this) {
-						this.send(clientSMR, new String(this.clientName.trim() + " a rejoint la conversation."));
-					}
+			for (SocketThread clientSMR : socketThreadToID.keySet()) {
+				if (clientSMR != this) {
+					this.send(clientSMR, this.clientName.trim() + " a rejoint la conversation.");
 				}
 			}
+
 			// Commencer la conversation
 			while (true) {
-				byte b[] = new byte[200];
-				inputStream.read(b);
-				String msg = new String(b);
-					if (msg.startsWith("exit")) {
-						this.closed = true;
-						break;
-					} else if (msg.startsWith("@")){
-						unicast(msg, this.clientName);
-					} else {
-						broadcast(msg, this.clientName);
-					}
-			}
-			// Confirme la terminaison de la session en envoyant un ack
-			if (this.closed) {
-				this.send(this, new String("ACKUSEREXIT"));
-				exit();
+				String msg = this.readMessage();
+				if (msg.startsWith("exit")) {
+					// Confirme la terminaison de la session en envoyant un ack
+					this.send(this, new UserExitAck().toString());
+					exit();
+				} else if (msg.startsWith("@")){
+					unicast(msg, this.clientName);
+				} else {
+					broadcast(msg, this.clientName);
+				}
 			}
 		} catch (IOException e) {
 			exit();
@@ -165,7 +202,7 @@ public class SocketThread extends Thread {
 		} catch (ClassNotFoundException e) {
 			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, e);
 		} catch (InterruptedException e) {
-			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, e);
+			throw new RuntimeException(e);
 		}
 	}
 
