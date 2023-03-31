@@ -32,10 +32,16 @@ public class SocketThread extends Thread {
 		this.nameSet = nameSet;
 	}
 
+	public OutputStream getOutputStream() {
+		return this.outputStream;
+	}
+
 	// send message to the client, used by the server, by socketThread
-	synchronized public void send(SocketThread destination, String str) throws IOException {
-		destination.outputStream.write(str.getBytes());
-		destination.outputStream.flush();
+	 public void send(SocketThread destination, String str) throws IOException {
+		synchronized (destination.outputStream) {
+			destination.outputStream.write(str.getBytes());
+			destination.outputStream.flush();
+		}
 	}
 
 	/**
@@ -100,7 +106,9 @@ public class SocketThread extends Thread {
 				System.out.println("de"+clientSMR.clientName+"bug");
 				if (clientSMR.clientName.trim().equals(dest)) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-					this.send(clientSMR, "[" + currentTime + "]" + "[" + clientName.trim() + "(msg privé)] " + msg_dest);
+					this.send(clientSMR, "[" + currentTime + "]" +
+							"[" + clientName.trim() +
+							"(msg privé)] " + msg_dest);
 					System.out.println("[Serveur] " + this.clientName.trim() + " a envoyé un message privé à " + dest);
 					ok = true;
 				}

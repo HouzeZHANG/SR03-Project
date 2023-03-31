@@ -43,8 +43,14 @@ public class ServeurChat {
 
             // handler called on Control-C pressed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                exit();
-                System.out.println("Client.ClientChat: Client exited");
+                System.out.println("[Serveur] ServeurChat exited");
+                for (SocketThread socketThread : socketThreadToID.keySet()) {
+                    try {
+                        socketThread.send(socketThread, BasicMsg.EXIT.toString());
+                    } catch (IOException e) {
+                        System.out.println("[Serveur] ServeurChat Error: " + e);
+                    }
+                }
             }));
 
             // boucle infinie pour continuer à accepter les demandes entrantes
@@ -62,20 +68,6 @@ public class ServeurChat {
             }
         } catch (Exception e) {
             Logger.getLogger(ServeurChat.class.getName()).log(Level.SEVERE, null, e);
-        }
-    }
-
-    private static void exit() {
-        for (SocketThread socketThread : socketThreadToID.keySet()) {
-            try {
-                // envoie un message de type EXIT à tous les clients
-                socketThread.send(socketThread, String.valueOf(BasicMsg.EXIT));
-                System.out.println("[Serveur] Envoie de EXIT à " + socketThreadToID.get(socketThread));
-                Thread.sleep(2000);
-                socketThread.exit();
-            } catch (IOException | InterruptedException e) {
-                System.out.println("ServeurChat Error: " + e);
-            }
         }
     }
 }

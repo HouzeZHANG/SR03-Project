@@ -6,8 +6,6 @@ import EnumLib.BasicMsg;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -41,6 +39,8 @@ public class ClientReceiveThread extends Thread {
 			System.out.println("Erreur: Fermeture de la connexion");
 //            Logger.getLogger(ClientReceiveThread.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+		System.exit(0);
 	}
 
 	synchronized private String readMessage() throws IOException, StringIndexOutOfBoundsException {
@@ -61,6 +61,7 @@ public class ClientReceiveThread extends Thread {
 						this.closed = true;
 						break;
 					} else if (msg.startsWith(BasicMsg.EXIT.toString())) {
+						// Si le serveur a quitté la conversation, quitter le boucle et terminer le programme
 						System.out.println("Le serveur a quitté la conversation. Merci pour votre utilisation !");
 						this.closed = true;
 						break;
@@ -71,9 +72,9 @@ public class ClientReceiveThread extends Thread {
 				}
 			} catch (Exception ex) {
 				System.out.println(ex.toString());
-				exit();
+				if (!this.clientSocket.isClosed()) { exit(); }
 			}
 		}
-		exit();
+		if (!this.clientSocket.isClosed()) { exit(); }
 	}
 }

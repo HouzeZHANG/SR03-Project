@@ -13,7 +13,7 @@ public class ClientSendThread extends Thread {
 	public ClientSendThread(OutputStream outputStream) {
 		this.outputStream = outputStream;
 	}
-    public void send(String str) throws IOException {
+    synchronized public void send(String str) throws IOException {
         this.outputStream.write(str.getBytes());
     }
 	public void exit() {
