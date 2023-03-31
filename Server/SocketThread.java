@@ -1,5 +1,6 @@
 package Server;
 
+import EnumLib.BasicMsg;
 import Server.util.UserExitAck;
 
 import java.io.*;
@@ -19,9 +20,6 @@ public class SocketThread extends Thread {
 	private String clientName;
 	private final InputStream inputStream;
 	private final OutputStream outputStream;
-
-	//??
-	private Boolean closed = false;
 
 	public SocketThread(Socket clientSocket,
 						Hashtable<SocketThread, String> socketThreadToID,
@@ -82,7 +80,7 @@ public class SocketThread extends Thread {
 	private void broadcast(String msg, String clientName) throws IOException, ClassNotFoundException {
 		synchronized (this) {
 			for (SocketThread clientSMR : socketThreadToID.keySet()) {
-				if (clientSMR != null && clientSMR.clientName != null && clientSMR.clientName != this.clientName) {
+				if (!clientSMR.clientName.equals(this.clientName)) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 					this.send(clientSMR, "[" + currentTime + "]" + "[" + clientName.trim() + "] " + msg);
 				}
@@ -111,11 +109,7 @@ public class SocketThread extends Thread {
 		}
 	}
 
-	boolean pseduoValide(String pseudo) {
-		System.out.println(pseudo);
-		System.out.println(pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1);
-		return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1;
-	}
+	boolean pseduoValide(String pseudo) { return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1; }
 
 	synchronized private String readMessage() throws IOException {
 		byte[] b = new byte[200];
@@ -136,7 +130,7 @@ public class SocketThread extends Thread {
 			System.out.println("Client name is " + this.clientName);
 
 			// Vérifier si le client veut quitter
-			if (this.clientName.equals("exit")) {
+			if (Objects.equals(this.clientName, BasicMsg.EXIT.toString())) {
 				this.exit();
 				return;
 			}
@@ -185,7 +179,7 @@ public class SocketThread extends Thread {
 			// Commencer la conversation
 			while (true) {
 				String msg = this.readMessage();
-				if (msg.startsWith("exit")) {
+				if (msg.startsWith(String.valueOf(BasicMsg.EXIT))) {
 					// Confirme la terminaison de la session en envoyant un ack
 					this.send(this, new UserExitAck().toString());
 					exit();
