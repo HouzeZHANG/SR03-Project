@@ -1,5 +1,8 @@
 package Server;
 
+import EnumLib.BasicMsg;
+
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
@@ -38,6 +41,12 @@ public class ServeurChat {
             System.out.println("[Serveur] Attente de connexion depuis le port " + PORT);
             serverSocket = new ServerSocket(PORT);
 
+            // handler called on Control-C pressed
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                exit();
+                System.out.println("Client.ClientChat: Client exited");
+            }));
+
             // boucle infinie pour continuer à accepter les demandes entrantes
             while(true) {
                 Socket comm = serverSocket.accept();
@@ -53,6 +62,20 @@ public class ServeurChat {
             }
         } catch (Exception e) {
             Logger.getLogger(ServeurChat.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private static void exit() {
+        for (SocketThread socketThread : socketThreadToID.keySet()) {
+            try {
+                // envoie un message de type EXIT à tous les clients
+                socketThread.send(socketThread, String.valueOf(BasicMsg.EXIT));
+                System.out.println("[Serveur] Envoie de EXIT à " + socketThreadToID.get(socketThread));
+                Thread.sleep(2000);
+                socketThread.exit();
+            } catch (IOException | InterruptedException e) {
+                System.out.println("ServeurChat Error: " + e);
+            }
         }
     }
 }

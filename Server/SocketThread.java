@@ -55,7 +55,9 @@ public class SocketThread extends Thread {
 				this.nameSet.remove(this.clientName);
 			}
 
-			System.out.println(this.clientName + " se déconnecte, "+ socketThreadToID.size() + " clients en ligne.");
+			System.out.println("[Serveur] " + this.clientName +
+					" se déconnecte, "+ socketThreadToID.size() +
+					" clients en ligne.");
 
 			for (SocketThread clientSMR : socketThreadToID.keySet()) {
 				// broadcast to all clients that a client has left
@@ -85,7 +87,7 @@ public class SocketThread extends Thread {
 					this.send(clientSMR, "[" + currentTime + "]" + "[" + clientName.trim() + "] " + msg);
 				}
 			}
-			System.out.println(this.clientName.trim() + " a envoyé un message");
+			System.out.println("[Serveur] " + this.clientName.trim() + " a envoyé un message");
 		}
 	}
 
@@ -99,12 +101,12 @@ public class SocketThread extends Thread {
 				if (clientSMR.clientName.trim().equals(dest)) {
 					String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 					this.send(clientSMR, "[" + currentTime + "]" + "[" + clientName.trim() + "(msg privé)] " + msg_dest);
-					System.out.println(this.clientName.trim() + " a envoyé un message privé à " + dest);
+					System.out.println("[Serveur] " + this.clientName.trim() + " a envoyé un message privé à " + dest);
 					ok = true;
 				}
 			}
 			if(!ok){
-				this.send(this, "Utilisateur " + dest + " n'existe pas");
+				this.send(this, "[Serveur] Utilisateur " + dest + " n'existe pas");
 			}
 		}
 	}
@@ -113,21 +115,21 @@ public class SocketThread extends Thread {
 
 	synchronized private String readMessage() throws IOException {
 		byte[] b = new byte[200];
-		this.inputStream.read(b);
-		return new String(b);
+		int len = this.inputStream.read(b);
+		return new String(b, 0, len);
 	}
 
 	private void setUserName() throws IOException, InterruptedException {
 		while(true){
-			this.send(this, "Entrez votre pseudo :\n");
-			System.out.println("Waiting for client to enter a username");
+			this.send(this, "[Serveur] Entrez votre pseudo :");
+			System.out.println("[Serveur] Waiting for client to enter a username");
 
 			while(this.inputStream.available() <= 0){
 				Thread.sleep(100);
 			}
 			// Lire le pseudo
 			this.clientName = this.readMessage().trim();
-			System.out.println("Client name is " + this.clientName);
+			System.out.println("[Serveur] Client name is " + this.clientName);
 
 			// Vérifier si le client veut quitter
 			if (Objects.equals(this.clientName, BasicMsg.EXIT.toString())) {
@@ -146,11 +148,11 @@ public class SocketThread extends Thread {
 					return;
 				}
 				else {
-					this.send(this, "Votre pseudo a déja été utilisé. Veuillez réessayer : ");
+					this.send(this, "[Serveur] Votre pseudo a déja été utilisé. Veuillez réessayer : ");
 				}
 			}
 			else {
-				this.send(this, "Le format de pseudo n'est pas valide. Veuillez réessayer : ");
+				this.send(this, "[Serveur] Le format de pseudo n'est pas valide. Veuillez réessayer : ");
 			}
 		}
 	}
@@ -162,17 +164,18 @@ public class SocketThread extends Thread {
 			setUserName();
 
 			// Afficher sur le serveur
-			System.out.println("Pseudo de nouveau client : " + this.clientName.trim());
+			System.out.println("[Serveur] Pseudo de nouveau client : " + this.clientName.trim());
 
 			// Afficher sur le client
-			this.send(this, "Vous(pseudo: " + this.clientName.trim()
-					+ ") avez rejoint la conversation.\nTapez " + BasicMsg.EXIT + " pour se déconnecter.\n");
+			this.send(this, "[Serveur] Vous(pseudo: " + this.clientName.trim()
+					+ ") avez rejoint la conversation.\n" +
+					"[Serveur] Tapez " + BasicMsg.EXIT + " pour se déconnecter.\n");
 			this.send(this, "-----------------------------------------------------");
 
 			// Annoncer aux autres clients
 			for (SocketThread clientSMR : socketThreadToID.keySet()) {
 				if (clientSMR != this) {
-					this.send(clientSMR, this.clientName.trim() + " a rejoint la conversation.");
+					this.send(clientSMR, "[Serveur] " + this.clientName.trim() + " a rejoint la conversation.");
 				}
 			}
 
@@ -190,9 +193,8 @@ public class SocketThread extends Thread {
 				}
 			}
 		} catch (IOException e) {
-			exit();
-			System.out.println("La session de " + this.clientName.trim() + " a terminé.");
-
+			if (!this.clientSocket.isClosed()) { exit(); }
+			System.out.println("[Serveur] La session de " + this.clientName.trim() + " a terminé.");
 		} catch (ClassNotFoundException e) {
 			Logger.getLogger(SocketThread.class.getName()).log(Level.SEVERE, null, e);
 		} catch (InterruptedException e) {

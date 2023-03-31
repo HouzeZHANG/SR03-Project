@@ -29,6 +29,7 @@ public class ClientChat {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     sendThread.send(BasicMsg.EXIT.toString());
+                    System.out.println("Client.ClientChat: Client exited");
                 } catch (IOException e) {
                     System.out.println("Client.ClientChat Error: " + e);
                 }
