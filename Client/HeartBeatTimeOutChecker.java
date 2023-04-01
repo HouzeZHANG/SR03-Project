@@ -35,7 +35,7 @@ public class HeartBeatTimeOutChecker extends Thread{
             }
             // 比较上一个ACK的时间和当前时间，如果超过10秒，说明服务器挂了
             Date now = new Date();
-            synchronized (this.lastHeartBeat) {
+            synchronized (lastHeartBeat) {
                 System.out.println("HeartBeatTimeOutChecker: " + this.lastHeartBeat.getTime());
                 if (now.getTime() - this.lastHeartBeat.getTime() > this.heartBeatTimeOut) {
                     System.out.println("Server is down");
