@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class HeartBeatSenderThread extends Thread{
+public class HeartBeatSender extends Thread{
     private int heartBeatInterval;
     private boolean isRunning;
     private final OutputStream outputStream;
 
-    public HeartBeatSenderThread(int heartBeatInterval, Socket clientSocket) throws IOException {
+    public HeartBeatSender(int heartBeatInterval, Socket clientSocket) throws IOException {
         this.heartBeatInterval = heartBeatInterval;
         this.isRunning = true;
         this.outputStream = clientSocket.getOutputStream();

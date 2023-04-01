@@ -28,12 +28,12 @@ public class ClientChat {
             Date lastHeartBeatTime = new Date();
 
             // create send and receive threads
-            ClientSendThread sendThread = new ClientSendThread(clientSocket.getOutputStream());
-		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket, lastHeartBeatTime);
+            ClientSend sendThread = new ClientSend(clientSocket.getOutputStream());
+		    ClientReceive receiveThread = new ClientReceive(clientSocket, lastHeartBeatTime);
 
             // create heart beat threads
-            HeartBeatSenderThread heartBeatSenderThread = new HeartBeatSenderThread(3000, clientSocket);
-            HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(8000,
+            HeartBeatSender heartBeatSender = new HeartBeatSender(3000, clientSocket);
+            TimeOutChecker timeOutChecker = new TimeOutChecker(8000,
                     1000, lastHeartBeatTime);
 
             // handler called on Control-C pressed
@@ -51,8 +51,8 @@ public class ClientChat {
             receiveThread.start();
 
             // start heart beat threads
-            heartBeatSenderThread.start();
-            heartBeatTimeOutChecker.start();
+            heartBeatSender.start();
+            timeOutChecker.start();
         } catch (Exception e) {
 			System.out.println("Client.ClientChat Error: " + e);
 		}

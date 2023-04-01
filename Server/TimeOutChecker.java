@@ -3,13 +3,13 @@ package Server;
 import java.util.Date;
 import java.util.Hashtable;
 
-public class HeartBeatTimeOutChecker extends Thread{
+public class TimeOutChecker extends Thread{
     private Hashtable<SocketThread, Date> socketToLastHeartBeat;
     private final long serverHeartBeatTimeOut;
     private int checkInterval;
 
-    public HeartBeatTimeOutChecker(Hashtable<SocketThread, Date> socketToLastHeartBeat,
-                                   int serverHeartBeatTimeOut, int checkInterval) {
+    public TimeOutChecker(Hashtable<SocketThread, Date> socketToLastHeartBeat,
+                          int serverHeartBeatTimeOut, int checkInterval) {
         this.socketToLastHeartBeat = socketToLastHeartBeat;
         this.serverHeartBeatTimeOut = serverHeartBeatTimeOut;
         this.checkInterval = checkInterval;

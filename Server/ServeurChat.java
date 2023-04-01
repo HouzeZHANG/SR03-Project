@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Hashtable;
@@ -43,9 +42,9 @@ public class ServeurChat {
 
             // create a thread to check if a client is disconnected
             Hashtable<SocketThread, Date> threadToLastHeartBeat = new Hashtable<SocketThread, Date>();
-            HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(threadToLastHeartBeat,
+            TimeOutChecker timeOutChecker = new TimeOutChecker(threadToLastHeartBeat,
                     8000, 1000);
-            heartBeatTimeOutChecker.start();
+            timeOutChecker.start();
 
             // handler called on Control-C pressed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

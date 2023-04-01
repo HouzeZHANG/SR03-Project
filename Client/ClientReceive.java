@@ -13,14 +13,14 @@ import java.util.Date;
  * Cette classe permet de recevoir les messages du serveur, par heritage de la classe Thread
  * @version 1.0
  */
-public class ClientReceiveThread extends Thread {
+public class ClientReceive extends Thread {
 	private final InputStream inputStream;
 	private final Socket clientSocket;
 	// thread flag to exit
 	private Boolean closed = false;
 	private Date lastHeartBeatTime;
 
-	public ClientReceiveThread(Socket clientSocket, Date lastHeartBeatTime) throws IOException {
+	public ClientReceive(Socket clientSocket, Date lastHeartBeatTime) throws IOException {
 		this.inputStream = clientSocket.getInputStream();
 		this.clientSocket = clientSocket;
 		this.lastHeartBeatTime = lastHeartBeatTime;

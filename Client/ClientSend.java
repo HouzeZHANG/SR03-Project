@@ -7,10 +7,10 @@ import java.util.*;
 import java.util.logging.*;
 
 
-public class ClientSendThread extends Thread {
+public class ClientSend extends Thread {
 	private final OutputStream outputStream;
 	private Boolean closed = false;
-	public ClientSendThread(OutputStream outputStream) {
+	public ClientSend(OutputStream outputStream) {
 		this.outputStream = outputStream;
 	}
     synchronized public void send(String str) throws IOException {
@@ -21,14 +21,14 @@ public class ClientSendThread extends Thread {
 		try {
 			Thread.sleep(20);
 		} catch (InterruptedException ex) { 
-            Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientSend.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         // Ferme la connexion
 		try {
 			this.outputStream.close();
 		} catch (IOException ex) { 
-            Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientSend.class.getName()).log(Level.SEVERE, null, ex);
         }
 	}
 
@@ -49,7 +49,7 @@ public class ClientSendThread extends Thread {
                     this.closed = true;
                 }
             } catch (IOException ex) {
-                Logger.getLogger(ClientSendThread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ClientSend.class.getName()).log(Level.SEVERE, null, ex);
                 System.out.println("Erreur: Default envoie");
                 break;
             }
