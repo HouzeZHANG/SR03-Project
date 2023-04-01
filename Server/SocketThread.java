@@ -142,12 +142,12 @@ public class SocketThread extends Thread {
 
 	private void setUserName() throws IOException, InterruptedException {
 		while(true){
+			this.clientName = "";
+
+			// Envoyer un message au client
 			this.send(this, "[Serveur] Entrez votre pseudo :");
 			System.out.println("[Serveur] Waiting for client to enter a username");
 
-			while(this.inputStream.available() <= 0){
-				Thread.sleep(100);
-			}
 			// Lire le pseudo
 			this.clientName = this.readMessage().trim();
 
