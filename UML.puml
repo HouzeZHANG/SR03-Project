@@ -1,27 +1,82 @@
 @startuml
-'https://plantuml.com/class-diagram
 
-abstract class AbstractList
-abstract AbstractCollection
-interface List
-interface Collection
-
-List <|-- AbstractList
-Collection <|-- AbstractCollection
-
-Collection <|- List
-AbstractCollection <|- AbstractList
-AbstractList <|-- ArrayList
-
-class ArrayList {
-Object[] elementData
-size()
+enum Ack {
+    CLIENT_EXIT
 }
 
-enum TimeUnit {
-DAYS
-HOURS
-MINUTES
+enum BasicMsg {
+    EXIT
 }
+
+' <<enumeration>>
+class ClientReceiveThread {
+    - clientSocket socket
+    - closed boolean
+    - inputStream InputStream
+
+    - readMessage(): String
+    + ClientReceiveThread(Socket clientSocket)
+    + exit(): void
+    + run() : void
+}
+
+class ClientSendThread {
+    - outputStream OutputStream
+    - closed Boolean
+
+    + ClientSendThread(OutputStream outputStream)
+    + send(String str)
+    + exit()
+    + run()
+}
+
+class ClientChat {
+    + main(String[] args)
+}
+
+class SocketThread {
+    - Hashtable<SocketThread, String> socketThreadToID
+    - HashSet<String> nameSet
+    - Socket clientSocket
+    - String clientName
+    - InputStream inputStream
+    - OutputStream outputStream
+
+    - boardcast(String msg, String clientName): void
+    - unicast(String msg, String clientName): void
+    - pseduoValide(String pseudo): boolean
+    - readMessage(): String
+    - setUserName(): void
+    + SocketThread(Socket clientSocket, Hashtable<SocketThread, String> socketThreadToID,
+                   HashSet<String> nameSet)
+    + getOutputStream(): OutputStream
+    + send(SocketThread destination, String str): void
+    + exit(): void
+    + run() : void
+}
+
+class ServeurChat {
+    - Hashtable<SocketThread, String> socketThreadToID
+    - HashSet<String> clientNames
+    - int PORT
+    - ServerSocket serverSocket
+
+    + toString(): String
+    + main(String[] args): void
+}
+
+Jeu *-- "81" Carte
+Pioche "1" o-- "*" Carte
+Plateau "1" o-- "12..*" Carte
+Combinaison "*" o-- "3" Carte
+
+Controller *-- "1" Plateau
+Controller *-- "1" Pioche
+Controller *-- "1" Jeu
+
+Carte *-- "1" Remplissages
+Carte *-- "1" Formes
+Carte *-- "1" Nombres
+Carte *-- "1" Couleurs
 
 @enduml
