@@ -148,6 +148,12 @@ public class SocketThread extends Thread {
 				return;
 			}
 
+			// Vérifier si c'est un heartbeat
+			if (Objects.equals(this.clientName, BasicMsg.HEART_BEAT.toString())) {
+				this.send(this, Ack.HEART_BEAT_ACK.toString());
+				continue;
+			}
+
 			// Vérifier si le pseudo est valide
 			if (pseduoValide(this.clientName)) {
 				// O(1) pour vérifier si le pseudo est déjà pris
@@ -199,7 +205,7 @@ public class SocketThread extends Thread {
 					exit();
 				}
 				else if (msg.startsWith(String.valueOf(BasicMsg.HEART_BEAT))) {
-					unicast(Ack.HEART_BEAT_ACK.toString(), this.clientName);
+					this.send(this, Ack.HEART_BEAT_ACK.toString());
 				}
 				else if (msg.startsWith("@")){
 					unicast(msg, this.clientName);
