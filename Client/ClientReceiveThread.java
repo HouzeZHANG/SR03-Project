@@ -89,7 +89,11 @@ public class ClientReceiveThread extends Thread {
 						System.out.println(msg);
 					}
 				}
+				else{
+					System.out.println("No message received");
+				}
 			} catch (Exception ex) {
+				System.out.println("Erreur: Reception de message");
 				System.out.println(ex.toString());
 				if (!this.clientSocket.isClosed()) { exit(); }
 			}
