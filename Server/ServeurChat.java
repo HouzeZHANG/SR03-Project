@@ -17,8 +17,8 @@ import java.util.Hashtable;
  */
 public class ServeurChat {
     // hashtable est thread-safe, peut etre utilisee par plusieurs socketsThreads
-    private static final Hashtable<SocketThread, String> socketThreadToID = new Hashtable<SocketThread, String>();
-    private static final HashSet<String> clientNames = new HashSet<String>();
+    private static final Hashtable<SocketThread, String> socketThreadToID = new Hashtable<>();
+    private static final HashSet<String> clientNames = new HashSet<>();
     private static int PORT;
     private static ServerSocket serverSocket;
 
@@ -58,7 +58,8 @@ public class ServeurChat {
                 Socket comm = serverSocket.accept();
                 if (comm.isConnected()){
                     // creation d'un nouveau thread
-                    SocketThread socketThread = new SocketThread(comm, socketThreadToID, clientNames);
+                    SocketThread socketThread = new SocketThread(comm, socketThreadToID,
+                            clientNames);
                     // stocke le message receptor dans le tableau
 			        socketThreadToID.put(socketThread, "");
                     // lance le thread

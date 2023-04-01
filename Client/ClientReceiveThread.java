@@ -20,7 +20,7 @@ public class ClientReceiveThread extends Thread {
 	private Boolean closed = false;
 
 	// last time the client received a heart beat ack, initialized when the client is created
-	Date lastHeartBeatTime = new Date();
+	private Date lastHeartBeatTime = new Date();
 
 	public ClientReceiveThread(Socket clientSocket) throws IOException {
 		this.inputStream = clientSocket.getInputStream();
