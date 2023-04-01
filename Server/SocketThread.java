@@ -24,7 +24,6 @@ public class SocketThread extends Thread {
 	@Override
 	public String toString() {
 		return "SocketThread{" +
-				"socketThreadToID=" + socketThreadToID +
 				", clientSocket=" + clientSocket +
 				", clientName='" + clientName + '\'' +
 				", inputStream=" + inputStream +
