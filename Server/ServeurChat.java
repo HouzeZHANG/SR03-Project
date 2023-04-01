@@ -41,7 +41,7 @@ public class ServeurChat {
             serverSocket = new ServerSocket(PORT);
 
             // create a thread to check if a client is disconnected
-            Hashtable<SocketThread, Date> threadToLastHeartBeat = new Hashtable<SocketThread, Date>();
+            Hashtable<SocketThread, Date> threadToLastHeartBeat = new Hashtable<>();
             TimeOutChecker timeOutChecker = new TimeOutChecker(threadToLastHeartBeat,
                     8000, 1000);
             timeOutChecker.start();
