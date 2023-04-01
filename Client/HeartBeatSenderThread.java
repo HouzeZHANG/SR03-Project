@@ -38,6 +38,7 @@ public class HeartBeatSenderThread extends Thread{
             }
             try {
                 this.send(BasicMsg.HEART_BEAT.toString());
+                System.out.println("HeartBeatSenderThread: " + BasicMsg.HEART_BEAT.toString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
