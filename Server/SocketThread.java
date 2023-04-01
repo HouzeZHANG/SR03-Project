@@ -14,11 +14,23 @@ import java.text.SimpleDateFormat;
 public class SocketThread extends Thread {
 	// create mapping between socket and client name O(1)
 	private final Hashtable<SocketThread, String> socketThreadToID;
+	private Hashtable<SocketThread, Date> threadToLastHeartBeat;
 	private final Socket clientSocket;
 	private String clientName;
 	private final InputStream inputStream;
 	private final OutputStream outputStream;
 	private Date lastHeartBeatTime = new Date();
+
+	@Override
+	public String toString() {
+		return "SocketThread{" +
+				"socketThreadToID=" + socketThreadToID +
+				", clientSocket=" + clientSocket +
+				", clientName='" + clientName + '\'' +
+				", inputStream=" + inputStream +
+				", outputStream=" + outputStream +
+				'}';
+	}
 
 	public SocketThread(Socket clientSocket,
 						Hashtable<SocketThread, String> socketThreadToID) throws IOException {
@@ -116,12 +128,6 @@ public class SocketThread extends Thread {
 		}
 	}
 
-	private boolean heartBeatTimeOut() {
-		Date currentTime = new Date();
-		long diff = currentTime.getTime() - lastHeartBeatTime.getTime();
-		return diff > 5000;
-	}
-
 	private boolean pseduoValide(String pseudo) { return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1; }
 
 	private String readMessage() throws IOException {
@@ -135,11 +141,6 @@ public class SocketThread extends Thread {
 
 	private void setUserName() throws IOException, InterruptedException {
 		while(true){
-			if (this.heartBeatTimeOut()){
-				this.exit();
-				return;
-			}
-
 			this.send(this, "[Serveur] Entrez votre pseudo :");
 			System.out.println("[Serveur] Waiting for client to enter a username");
 
@@ -157,9 +158,10 @@ public class SocketThread extends Thread {
 
 			// Vérifier si c'est un heartbeat
 			if (Objects.equals(this.clientName, BasicMsg.HEART_BEAT.toString())) {
+				// Envoyer un ACK
 				this.send(this, Ack.HEART_BEAT_ACK.toString());
 				// Mise à jour du temps du dernier heartbeat
-				this.lastHeartBeatTime = new Date();
+				this.threadToLastHeartBeat.put(this, new Date());
 				continue;
 			}
 
@@ -208,9 +210,6 @@ public class SocketThread extends Thread {
 
 			// Commencer la conversation
 			while (true) {
-				if (this.heartBeatTimeOut()){
-					this.exit();
-				}
 				String msg = this.readMessage();
 				if (msg.startsWith(String.valueOf(BasicMsg.EXIT))) {
 					// Confirme la terminaison de la session en envoyant un ack
@@ -220,7 +219,7 @@ public class SocketThread extends Thread {
 				else if (msg.startsWith(String.valueOf(BasicMsg.HEART_BEAT))) {
 					this.send(this, Ack.HEART_BEAT_ACK.toString());
 					// Mise à jour du temps du dernier heartbeat
-					this.lastHeartBeatTime = new Date();
+					this.threadToLastHeartBeat.put(this, new Date());
 				}
 				else if (msg.startsWith("@")){
 					unicast(msg, this.clientName);

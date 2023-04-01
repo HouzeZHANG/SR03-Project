@@ -29,7 +29,7 @@ public class HeartBeatTimeOutChecker extends Thread{
     public void run() {
         while (true) {
             try {
-                Thread.sleep(checkInterval);
+                Thread.sleep(this.checkInterval);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -37,9 +37,9 @@ public class HeartBeatTimeOutChecker extends Thread{
             Date now = new Date();
             synchronized (this.lastHeartBeat) {
                 System.out.println("HeartBeatTimeOutChecker: " + this.lastHeartBeat.getTime());
-                if (now.getTime() - lastHeartBeat.getTime() > heartBeatTimeOut) {
+                if (now.getTime() - this.lastHeartBeat.getTime() > this.heartBeatTimeOut) {
                     System.out.println("Server is down");
-//                    exit();
+                    exit();
                     break;
                 }
             }

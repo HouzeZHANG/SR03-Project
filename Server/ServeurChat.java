@@ -5,6 +5,7 @@ import EnumLib.BasicMsg;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,9 +36,16 @@ public class ServeurChat {
      */
     public static void main(String[] args) {
         try {
+            // creation du socket serveur
             PORT = Integer.parseInt(args[0]);
             System.out.println("[Serveur] Attente de connexion depuis le port " + PORT);
             serverSocket = new ServerSocket(PORT);
+
+            // create a thread to check if a client is disconnected
+            Hashtable<SocketThread, Date> threadToLastHeartBeat = new Hashtable<SocketThread, Date>();
+            HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(threadToLastHeartBeat,
+                    5000, 2000);
+            heartBeatTimeOutChecker.start();
 
             // handler called on Control-C pressed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -61,7 +69,8 @@ public class ServeurChat {
 			        socketThreadToID.put(socketThread, "");
                     // lance le thread
 			        socketThread.start();
-                    System.out.println("[Serveur] Connexion établie avec un client, " + socketThreadToID.size() + " clients en ligne.");
+                    System.out.println("[Serveur] Connexion établie avec un client, " +
+                            socketThreadToID.size() + " clients en ligne.");
                 }
             }
         } catch (Exception e) {
