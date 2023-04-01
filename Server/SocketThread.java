@@ -197,7 +197,11 @@ public class SocketThread extends Thread {
 					// Confirme la terminaison de la session en envoyant un ack
 					this.send(this, Ack.CLIENT_EXIT.toString());
 					exit();
-				} else if (msg.startsWith("@")){
+				}
+				else if (msg.startsWith(String.valueOf(BasicMsg.HEART_BEAT))) {
+					unicast(Ack.HEART_BEAT_ACK.toString(), this.clientName);
+				}
+				else if (msg.startsWith("@")){
 					unicast(msg, this.clientName);
 				} else {
 					broadcast(msg, this.clientName);
