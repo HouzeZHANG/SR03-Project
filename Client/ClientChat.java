@@ -17,8 +17,7 @@ public class ClientChat {
      */
     public static void main(String[] args) {
         try{
-            System.out.println(args[0]);
-            Socket clientSocket = new Socket ("localhost", Integer.parseInt(args[0]));
+            Socket clientSocket = new Socket (args[0], Integer.parseInt(args[1]));
             System.out.println("Connecté : " + clientSocket +
                     " " + clientSocket.getInetAddress() +
                     " " + clientSocket.getPort());
