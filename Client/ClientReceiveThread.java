@@ -18,13 +18,12 @@ public class ClientReceiveThread extends Thread {
 	private final Socket clientSocket;
 	// thread flag to exit
 	private Boolean closed = false;
+	private Date lastHeartBeatTime;
 
-	// last time the client received a heart beat ack, initialized when the client is created
-	private Date lastHeartBeatTime = new Date();
-
-	public ClientReceiveThread(Socket clientSocket) throws IOException {
+	public ClientReceiveThread(Socket clientSocket, Date lastHeartBeatTime) throws IOException {
 		this.inputStream = clientSocket.getInputStream();
 		this.clientSocket = clientSocket;
+		this.lastHeartBeatTime = lastHeartBeatTime;
 	}
 
 	public void exit() {
@@ -55,21 +54,9 @@ public class ClientReceiveThread extends Thread {
 		return new String(b, 0, len);
 	}
 
-	private boolean heartBeatAckTimeout(Date latestHeartBeatAck) {
-		return latestHeartBeatAck.getTime() - lastHeartBeatTime.getTime() > 5000;
-	}
-
 	public void run() {
 		String msg;
 		while (!this.closed) {
-			// Si le client n'a pas recu de heartBeatAck du serveur pendant 10 secondes,
-			// quitter le boucle et terminer le programme
-			if (heartBeatAckTimeout(new Date())) {
-				System.out.println("Heart beat timeout, exiting...");
-				this.closed = true;
-				break;
-			}
-
 			try {
 				msg = readMessage();
 				if (!msg.equals("")) {
@@ -85,7 +72,9 @@ public class ClientReceiveThread extends Thread {
 						break;
 					} else if (msg.startsWith(Ack.HEART_BEAT_ACK.toString())) {
 						// update lastHeartBeatTime
-						this.lastHeartBeatTime = new Date();
+						synchronized (this.lastHeartBeatTime) {
+							this.lastHeartBeatTime = new Date();
+						}
 					} else {
 						// afficher le message recu
 						System.out.println(msg);

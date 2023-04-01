@@ -12,7 +12,6 @@ import java.util.Date;
  * @version 1.1
  */
 public class ClientChat {
-    static private Date lastHeartBeatTime;
     /**
      * Main method
      * @param args: port number used by the server
@@ -25,13 +24,16 @@ public class ClientChat {
                     " " + clientSocket.getInetAddress() +
                     " " + clientSocket.getPort());
 
+            // create heart beat time, shared by all threads
+            Date lastHeartBeatTime = new Date();
+
             // create send and receive threads
             ClientSendThread sendThread = new ClientSendThread(clientSocket.getOutputStream());
-		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket);
+		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket, lastHeartBeatTime);
 
             // create heart beat threads
             HeartBeatSenderThread heartBeatSenderThread = new HeartBeatSenderThread(1000, clientSocket);
-            HeartBeatReceiverThread heartBeatReceiverThread = new HeartBeatReceiverThread(5000,
+            HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(5000,
                     1000, lastHeartBeatTime);
 
             // handler called on Control-C pressed
@@ -50,7 +52,7 @@ public class ClientChat {
 
             // start heart beat threads
             heartBeatSenderThread.start();
-            heartBeatReceiverThread.start();
+            heartBeatTimeOutChecker.start();
         } catch (Exception e) {
 			System.out.println("Client.ClientChat Error: " + e);
 		}

@@ -2,7 +2,7 @@ package Client;
 
 import java.util.Date;
 
-public class HeartBeatReceiverThread extends Thread{
+public class HeartBeatTimeOutChecker extends Thread{
     private final long heartBeatTimeOut;
     private final long checkInterval;
     private Date lastHeartBeat;
@@ -19,7 +19,7 @@ public class HeartBeatReceiverThread extends Thread{
                 '}';
     }
 
-    public HeartBeatReceiverThread(long heartBeatTimeOut, long checkInterval, Date lastHeartBeat) {
+    public HeartBeatTimeOutChecker(long heartBeatTimeOut, long checkInterval, Date lastHeartBeat) {
         this.heartBeatTimeOut = heartBeatTimeOut;
         this.checkInterval = checkInterval;
         this.lastHeartBeat = lastHeartBeat;
