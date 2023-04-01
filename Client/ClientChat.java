@@ -23,7 +23,7 @@ public class ClientChat {
                     " " + clientSocket.getPort());
             ClientSendThread sendThread = new ClientSendThread(clientSocket.getOutputStream());
 		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket);
-            HeartBeatThread heartBeatThread = new HeartBeatThread(10000, clientSocket);
+            HeartBeatThread heartBeatThread = new HeartBeatThread(2500, clientSocket);
 
             // handler called on Control-C pressed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
