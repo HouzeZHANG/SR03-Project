@@ -54,7 +54,7 @@ public class ClientReceiveThread extends Thread {
 	}
 
 	private boolean heartBeatAckTimeout(Date latestHeartBeatAck) {
-		return latestHeartBeatAck.getTime() - lastHeartBeatTime.getTime() > 10000;
+		return latestHeartBeatAck.getTime() - lastHeartBeatTime.getTime() > 5000;
 	}
 
 	public void run() {

@@ -123,7 +123,7 @@ public class SocketThread extends Thread {
 	private boolean heartBeatTimeOut() {
 		Date currentTime = new Date();
 		long diff = currentTime.getTime() - lastHeartBeatTime.getTime();
-		return diff > 10000;
+		return diff > 5000;
 	}
 
 	private boolean pseduoValide(String pseudo) { return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1; }
@@ -214,7 +214,6 @@ public class SocketThread extends Thread {
 			while (true) {
 				if (this.heartBeatTimeOut()){
 					this.exit();
-					return;
 				}
 				String msg = this.readMessage();
 				if (msg.startsWith(String.valueOf(BasicMsg.EXIT))) {
