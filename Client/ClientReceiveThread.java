@@ -74,6 +74,7 @@ public class ClientReceiveThread extends Thread {
 						// update lastHeartBeatTime
 						synchronized (this.lastHeartBeatTime) {
 							this.lastHeartBeatTime = new Date();
+							System.out.println("Heart beat received at " + this.lastHeartBeatTime);
 						}
 					} else {
 						// afficher le message recu
