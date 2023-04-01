@@ -1,18 +1,24 @@
 package Client;
 
-import EnumLib.Ack;
+import EnumLib.BasicMsg;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class HeartBeatThread extends Thread{
     private int heartBeatInterval;
     private boolean isRunning;
-    private final ClientSendThread clientSendThread;
+    private final OutputStream outputStream;
 
-    public HeartBeatThread(int heartBeatInterval, ClientSendThread clientSendThread) {
+    public HeartBeatThread(int heartBeatInterval, Socket clientSocket) throws IOException {
         this.heartBeatInterval = heartBeatInterval;
         this.isRunning = true;
-        this.clientSendThread = clientSendThread;
+        this.outputStream = clientSocket.getOutputStream();
+    }
+
+    synchronized public void send(String str) throws IOException {
+        this.outputStream.write(str.getBytes());
     }
 
     public void setHeartBeatInterval(int heartBeatInterval) {
@@ -31,7 +37,7 @@ public class HeartBeatThread extends Thread{
                 e.printStackTrace();
             }
             try {
-                this.clientSendThread.send(Ack.HEART_BEAT.toString());
+                this.send(BasicMsg.HEART_BEAT.toString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

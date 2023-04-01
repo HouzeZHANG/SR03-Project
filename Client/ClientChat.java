@@ -23,6 +23,7 @@ public class ClientChat {
                     " " + clientSocket.getPort());
             ClientSendThread sendThread = new ClientSendThread(clientSocket.getOutputStream());
 		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket);
+            HeartBeatThread heartBeatThread = new HeartBeatThread(10000, clientSocket);
 
             // handler called on Control-C pressed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -36,6 +37,7 @@ public class ClientChat {
 
             sendThread.start();
             receiveThread.start();
+            heartBeatThread.start();
         } catch (Exception e) {
 			System.out.println("Client.ClientChat Error: " + e);
 		}

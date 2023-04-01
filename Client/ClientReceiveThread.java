@@ -6,6 +6,7 @@ import EnumLib.BasicMsg;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.Date;
 
 
 /**
@@ -17,6 +18,9 @@ public class ClientReceiveThread extends Thread {
 	private final Socket clientSocket;
 	// thread flag to exit
 	private Boolean closed = false;
+
+	// last time the client received a heart beat ack, initialized when the client is created
+	Date lastHeartBeatTime = new Date();
 
 	public ClientReceiveThread(Socket clientSocket) throws IOException {
 		this.inputStream = clientSocket.getInputStream();
@@ -49,9 +53,21 @@ public class ClientReceiveThread extends Thread {
 		return new String(b, 0, len);
 	}
 
+	private boolean heartBeatAckTimeout(Date latestHeartBeatAck) {
+		return latestHeartBeatAck.getTime() - lastHeartBeatTime.getTime() > 10000;
+	}
+
 	public void run() {
 		String msg;
 		while (!this.closed) {
+			// Si le client n'a pas recu de heartBeatAck du serveur pendant 10 secondes,
+			// quitter le boucle et terminer le programme
+			if (heartBeatAckTimeout(new Date())) {
+				System.out.println("Heart beat timeout, exiting...");
+				this.closed = true;
+				break;
+			}
+
 			try {
 				msg = readMessage();
 				if (!msg.equals("")) {
@@ -65,6 +81,9 @@ public class ClientReceiveThread extends Thread {
 						System.out.println("Le serveur a quitté la conversation. Merci pour votre utilisation !");
 						this.closed = true;
 						break;
+					} else if (msg.startsWith(Ack.HEART_BEAT_ACK.toString())) {
+						// update lastHeartBeatTime
+						this.lastHeartBeatTime = new Date();
 					} else {
 						// afficher le message recu
 						System.out.println(msg);

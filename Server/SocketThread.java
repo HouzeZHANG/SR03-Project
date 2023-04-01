@@ -121,9 +121,12 @@ public class SocketThread extends Thread {
 
 	private boolean pseduoValide(String pseudo) { return pseudo.indexOf('@') == -1 && pseudo.indexOf('!') == -1; }
 
-	synchronized private String readMessage() throws IOException {
+	private String readMessage() throws IOException {
 		byte[] b = new byte[200];
-		int len = this.inputStream.read(b);
+		int len;
+		synchronized (this) {
+			len = this.inputStream.read(b);
+		}
 		return new String(b, 0, len);
 	}
 
