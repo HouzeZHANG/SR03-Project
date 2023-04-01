@@ -32,8 +32,8 @@ public class ClientChat {
 		    ClientReceiveThread receiveThread = new ClientReceiveThread(clientSocket, lastHeartBeatTime);
 
             // create heart beat threads
-            HeartBeatSenderThread heartBeatSenderThread = new HeartBeatSenderThread(1000, clientSocket);
-            HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(5000,
+            HeartBeatSenderThread heartBeatSenderThread = new HeartBeatSenderThread(3000, clientSocket);
+            HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(8000,
                     1000, lastHeartBeatTime);
 
             // handler called on Control-C pressed

@@ -44,7 +44,7 @@ public class ServeurChat {
             // create a thread to check if a client is disconnected
             Hashtable<SocketThread, Date> threadToLastHeartBeat = new Hashtable<SocketThread, Date>();
             HeartBeatTimeOutChecker heartBeatTimeOutChecker = new HeartBeatTimeOutChecker(threadToLastHeartBeat,
-                    5000, 2000);
+                    8000, 1000);
             heartBeatTimeOutChecker.start();
 
             // handler called on Control-C pressed
