@@ -49,9 +49,9 @@ public class ClientReceiveThread extends Thread {
 
 	synchronized private String readMessage() throws IOException, StringIndexOutOfBoundsException {
 		byte[] b = new byte[200];
-		System.out.println("Waiting for message...");
+//		System.out.println("Waiting for message...");
 		int len = this.inputStream.read(b);
-		System.out.println("Message received");
+//		System.out.println("Message received");
 		return new String(b, 0, len);
 	}
 
@@ -96,7 +96,6 @@ public class ClientReceiveThread extends Thread {
 				}
 			} catch (Exception ex) {
 				System.out.println("Erreur: Reception de message");
-				System.out.println(ex.toString());
 				if (!this.clientSocket.isClosed()) { exit(); }
 			}
 		}
