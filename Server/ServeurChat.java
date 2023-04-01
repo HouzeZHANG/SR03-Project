@@ -64,7 +64,7 @@ public class ServeurChat {
                 Socket comm = serverSocket.accept();
                 if (comm.isConnected()){
                     // creation d'un nouveau thread
-                    SocketThread socketThread = new SocketThread(comm, socketThreadToID);
+                    SocketThread socketThread = new SocketThread(comm, socketThreadToID, threadToLastHeartBeat);
                     // stocke le message receptor dans le tableau
 			        socketThreadToID.put(socketThread, "");
                     // lance le thread

@@ -33,12 +33,14 @@ public class SocketThread extends Thread {
 	}
 
 	public SocketThread(Socket clientSocket,
-						Hashtable<SocketThread, String> socketThreadToID) throws IOException {
+						Hashtable<SocketThread, String> socketThreadToID,
+						Hashtable<SocketThread, Date> threadToLastHeartBeat) throws IOException {
 		this.clientSocket = clientSocket;
 		this.socketThreadToID = socketThreadToID;
 		this.clientName = "";
 		this.inputStream = clientSocket.getInputStream();
 		this.outputStream = clientSocket.getOutputStream();
+		this.threadToLastHeartBeat = threadToLastHeartBeat;
 	}
 
 	public OutputStream getOutputStream() {
