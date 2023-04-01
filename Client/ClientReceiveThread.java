@@ -73,7 +73,7 @@ public class ClientReceiveThread extends Thread {
 					} else if (msg.startsWith(Ack.HEART_BEAT_ACK.toString())) {
 						// update lastHeartBeatTime
 						synchronized (this.lastHeartBeatTime) {
-							this.lastHeartBeatTime = new Date();
+							this.lastHeartBeatTime.setTime(new Date().getTime());
 							System.out.println("Heart beat received at " + this.lastHeartBeatTime);
 						}
 					} else {
