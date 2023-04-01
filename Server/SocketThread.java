@@ -152,7 +152,6 @@ public class SocketThread extends Thread {
 			}
 			// Lire le pseudo
 			this.clientName = this.readMessage().trim();
-			System.out.println("[Serveur] Client name is " + this.clientName);
 
 			// Vérifier si le client veut quitter
 			if (Objects.equals(this.clientName, BasicMsg.EXIT.toString())) {
@@ -167,6 +166,7 @@ public class SocketThread extends Thread {
 				this.lastHeartBeatTime = new Date();
 				continue;
 			}
+
 
 			// Vérifier si le pseudo est valide
 			if (pseduoValide(this.clientName)) {
