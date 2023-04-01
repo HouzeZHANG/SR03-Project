@@ -14,8 +14,6 @@ import java.text.SimpleDateFormat;
 public class SocketThread extends Thread {
 	// create mapping between socket and client name O(1)
 	private final Hashtable<SocketThread, String> socketThreadToID;
-	// used to check if the client name is already taken O(1)
-	private final HashSet<String> nameSet;
 	private final Socket clientSocket;
 	private String clientName;
 	private final InputStream inputStream;
@@ -23,14 +21,12 @@ public class SocketThread extends Thread {
 	private Date lastHeartBeatTime = new Date();
 
 	public SocketThread(Socket clientSocket,
-						Hashtable<SocketThread, String> socketThreadToID,
-						HashSet<String> nameSet) throws IOException {
+						Hashtable<SocketThread, String> socketThreadToID) throws IOException {
 		this.clientSocket = clientSocket;
 		this.socketThreadToID = socketThreadToID;
 		this.clientName = "";
 		this.inputStream = clientSocket.getInputStream();
 		this.outputStream = clientSocket.getOutputStream();
-		this.nameSet = nameSet;
 	}
 
 	public OutputStream getOutputStream() {
@@ -58,8 +54,8 @@ public class SocketThread extends Thread {
 				this.clientName = "Anonyme user";
 			}
 			else{
-				// mise à jour de la liste des noms
-				this.nameSet.remove(this.clientName);
+				// remove the name from the hashTable
+				this.socketThreadToID.remove(this);
 			}
 
 			System.out.println("[Serveur] " + this.clientName +
@@ -171,11 +167,11 @@ public class SocketThread extends Thread {
 			// Vérifier si le pseudo est valide
 			if (pseduoValide(this.clientName)) {
 				// O(1) pour vérifier si le pseudo est déjà pris
-				if (!this.nameSet.contains(this.clientName)) {
+				if (!this.socketThreadToID.contains(this.clientName)) {
 					// O(1) pour ajouter le pseudo à la hashmap
 					this.socketThreadToID.put(this, this.clientName);
 					// O(1) pour ajouter le pseudo à la liste des pseudos
-					this.nameSet.add(this.clientName);
+					this.socketThreadToID.put(this, this.clientName);
 					return;
 				}
 				else {
