@@ -25,11 +25,8 @@ public class HeartBeatSenderThread extends Thread{
         this.heartBeatInterval = heartBeatInterval;
     }
 
-    public void stopHeartBeat() {
-        this.isRunning = false;
-    }
-
     public void run() {
+        System.out.println("HeartBeatSenderThread: " + "Start");
         while (isRunning) {
             try {
                 Thread.sleep(heartBeatInterval);
