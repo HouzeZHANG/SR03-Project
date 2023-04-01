@@ -29,7 +29,7 @@ public class HeartBeatTimeOutChecker extends Thread{
                 // get lastHeartBeat
                 Date lastHeartBeat = this.socketToLastHeartBeat.get(socketThread);
                 synchronized (lastHeartBeat) {
-                    System.out.println("HeartBeatTimeOutChecker: " + lastHeartBeat.getTime());
+//                    System.out.println("HeartBeatTimeOutChecker: " + lastHeartBeat.getTime());
                     if (now.getTime() - lastHeartBeat.getTime() > this.serverHeartBeatTimeOut) {
                         System.out.println("Client " + socketThread + " is down");
                         socketThread.exit();
