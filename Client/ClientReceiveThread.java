@@ -49,7 +49,9 @@ public class ClientReceiveThread extends Thread {
 
 	synchronized private String readMessage() throws IOException, StringIndexOutOfBoundsException {
 		byte[] b = new byte[200];
+		System.out.println("Waiting for message...");
 		int len = this.inputStream.read(b);
+		System.out.println("Message received");
 		return new String(b, 0, len);
 	}
 
