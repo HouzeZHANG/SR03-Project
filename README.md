@@ -133,51 +133,50 @@ Socket clientSocket = new Socket (args[0], Integer.parseInt(args[1]));
 
 ```java
 private void setUserName() throws IOException, InterruptedException {
-		while(true){
-			this.clientName = "";
+    while(true){
+        this.clientName = "";
 
-			// Envoyer un message au client
-			this.send(this, "[Serveur] Entrez votre pseudo :");
-			System.out.println("[Serveur] Waiting for client to enter a username");
+        // Envoyer un message au client
+        this.send(this, "[Serveur] Entrez votre pseudo :");
+        System.out.println("[Serveur] Waiting for client to enter a username");
 
-			// Lire le pseudo
-			this.clientName = this.readMessage().trim();
+        // Lire le pseudo
+        this.clientName = this.readMessage().trim();
 
-			// Vérifier si le client veut quitter
-			if (Objects.equals(this.clientName, BasicMsg.EXIT.toString())) {
-				this.exit();
-				return;
-			}
+        // Vérifier si le client veut quitter
+        if (Objects.equals(this.clientName, BasicMsg.EXIT.toString())) {
+            this.exit();
+            return;
+        }
 
-			// Vérifier si c'est un heartbeat
-			if (Objects.equals(this.clientName, BasicMsg.HEART_BEAT.toString())) {
-				// Envoyer un ACK
-				this.send(this, Ack.HEART_BEAT_ACK.toString());
-				// Mise à jour du temps du dernier heartbeat
-				this.threadToLastHeartBeat.put(this, new Date());
-				continue;
-			}
-
-
-			// Vérifier si le pseudo est valide
-			if (pseduoValide(this.clientName)) {
-				// O(1) pour vérifier si le pseudo est déjà pris
-				if (!this.socketThreadToID.contains(this.clientName)) {
-					// O(1) pour ajouter le pseudo à la hashmap
-					this.socketThreadToID.put(this, this.clientName);
-					// O(1) pour ajouter le pseudo à la liste des pseudos
-					this.socketThreadToID.put(this, this.clientName);
-					return;
-				}
-				else {
-					this.send(this, "[Serveur] Votre pseudo a déja été utilisé. Veuillez réessayer : ");
-				}
-			}
-			else {
-				this.send(this, "[Serveur] Le format de pseudo n'est pas valide. Veuillez réessayer : ");
-			}
-		}
-	}
+        // Vérifier si c'est un heartbeat
+        if (Objects.equals(this.clientName, BasicMsg.HEART_BEAT.toString())) {
+            // Envoyer un ACK
+            this.send(this, Ack.HEART_BEAT_ACK.toString());
+            // Mise à jour du temps du dernier heartbeat
+            this.threadToLastHeartBeat.put(this, new Date());
+            continue;
+        }
+        
+        // Vérifier si le pseudo est valide
+        if (pseduoValide(this.clientName)) {
+            // O(1) pour vérifier si le pseudo est déjà pris
+            if (!this.socketThreadToID.contains(this.clientName)) {
+                // O(1) pour ajouter le pseudo à la hashmap
+                this.socketThreadToID.put(this, this.clientName);
+                // O(1) pour ajouter le pseudo à la liste des pseudos
+                this.socketThreadToID.put(this, this.clientName);
+                return;
+            }
+            else {
+                this.send(this, "[Serveur] Votre pseudo a déja été utilisé. Veuillez réessayer : ");
+            }
+        }
+        else {
+            this.send(this, "[Serveur] Le format de pseudo n'est pas valide. Veuillez réessayer : ");
+        }
+    }
+}
 ```
 
 La méthode `setUserName()` est appelée en premier lorsque le SocketThread est en cours d'exécution et est utilisée pour guider l'utilisateur dans le processus de définition du nom d'utilisateur (pseudo). Cette méthode détermine d'abord si le type de message reçu est un message EXIT ou un paquet heartbeat. Si ce n'est pas le cas, elle vérifie si le pseudo reçu existe déjà pour un utilisateur existant ; si c'est le cas, l'utilisateur est invité à le saisir à nouveau ; si ce n'est pas le cas, le pseudo est ajouté avec succès.
