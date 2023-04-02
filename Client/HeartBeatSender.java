@@ -31,7 +31,7 @@ public class HeartBeatSender extends Thread{
             try {
                 Thread.sleep(heartBeatInterval);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             try {
                 this.send(BasicMsg.HEART_BEAT.toString());
