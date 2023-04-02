@@ -24,8 +24,8 @@
       - [Serveur](#serveur)
       - [Client](#client)
     - [2.2 Établissement de connexion](#22-établissement-de-connexion)
-      - [Connexion socket](#221-connexion-socket)
-      - [Vérification de doublon de pseudo](#222-vérification-de-doublon-de-pseudo)
+      - [2.2.1 Connexion socket](#221-connexion-socket)
+      - [2.2.2 Vérification de doublon de pseudo](#222-vérification-de-doublon-de-pseudo)
     - [2.3 Chat](#23-chat)
       - [2.3.1 Broadcast](#231-broadcast)
       - [2.3.2 Unicast](#232-unicast)
@@ -92,13 +92,13 @@ Un mécanisme de détection de connexion a été également mis en place. Ceci c
 #### Serveur
 
 ![](doc/img/pastedimage0.png)
-La classe ServeurChat est un thread personnalisé pour le côté serveur. Une fois que le processus côté serveur est lancé, le thread principal ouvre un thread TimeOutChecker pour mettre à jour et vérifier tous les heartbeat provenant du client. Une fois que Serveur est connecté à un client, le thread principal ouvre un thread SocketThread pour le client afin de gérer la communication avec le client, de répondre aux paquets de heartbeat du client et de mettre à jour le Hashtable threadToLastHeartBeat.
+La classe `ServeurChat` est un thread personnalisé pour le côté serveur. Une fois que le processus côté serveur est lancé, le thread principal ouvre un thread `TimeOutChecker` pour mettre à jour et vérifier tous les heartbeat provenant du client. Une fois que Serveur est connecté à un client, le thread principal ouvre un thread `SocketThread` pour le client afin de gérer la communication avec le client, de répondre aux paquets de heartbeat du client et de mettre à jour le Hashtable `threadToLastHeartBeat`.
 
 #### Client
 
 ![](doc/img/pastedimage1.png)
 
-Une fois que le client a établi une connexion avec le serveur, quatre threads sont instanciés. HeartBeatSender est chargé d'envoyer des paquets Heartbeat au serveur de façons périodique. TimeOutChecker est chargé de vérifier si l'ACK du paquet Heartbeat a expiré, et de quitter le processus client si c'est le cas. ClientSend est responsable de l'envoi des messages de contrôle et des messages de discussion. Le thread ClientReceive est responsable de la réception des messages et des paquets Heartbeat.
+Une fois que le client a établi une connexion avec le serveur, quatre threads sont instanciés. `HeartBeatSender` est chargé d'envoyer des paquets Heartbeat au serveur de façons périodique. `TimeOutChecker` est chargé de vérifier si l'ACK du paquet Heartbeat a expiré, et de quitter le processus client si c'est le cas. `ClientSend` est responsable de l'envoi des messages de contrôle et des messages de discussion. Le thread `ClientReceive` est responsable de la réception des messages et des paquets Heartbeat.
 
 ### 2.2 Établissement de connexion
 
@@ -106,7 +106,7 @@ Une fois que le client a établi une connexion avec le serveur, quatre threads s
 
 ![](doc/img/pastedimage2.png)
 
-La méthode ServerSocket.accpet() implémenté côté serveur pour une surveillance continue
+La méthode `ServerSocket.accpet()` implémenté côté serveur pour une surveillance continue
 
 ```java
 while(true) {
@@ -180,7 +180,7 @@ private void setUserName() throws IOException, InterruptedException {
 	}
 ```
 
-La méthode `setUserName()` est appelée en premier lorsque le SocketThread est en cours d'exécution et est utilisée pour guider l'utilisateur dans le processus de définition du nom d'utilisateur (pseudo). Cette méthode détermine d'abord si le type de message reçu est un paquet de sortie ou de battement de cœur. Si ce n'est pas le cas, elle vérifie si le pseudo reçu existe déjà pour un utilisateur existant ; si c'est le cas, l'utilisateur est invité à le saisir à nouveau ; si ce n'est pas le cas, le pseudo est ajouté avec succès.
+La méthode `setUserName()` est appelée en premier lorsque le SocketThread est en cours d'exécution et est utilisée pour guider l'utilisateur dans le processus de définition du nom d'utilisateur (pseudo). Cette méthode détermine d'abord si le type de message reçu est un message EXIT ou un paquet heartbeat. Si ce n'est pas le cas, elle vérifie si le pseudo reçu existe déjà pour un utilisateur existant ; si c'est le cas, l'utilisateur est invité à le saisir à nouveau ; si ce n'est pas le cas, le pseudo est ajouté avec succès.
 
 ### 2.3 Chat
 
@@ -229,9 +229,9 @@ private void broadcast(String msg, String clientName) throws IOException, ClassN
 
 #### 2.3.2 Unicast
 
-Les messages unicast ont le format @pseudo contenu_du_messgae
+Les messages unicast ont le format `@pseudo contenu_du_messgae`
 
-Lorsque le serveur détecte qu'un message commence par le symbole @, il essaie d'isoler le champ de pseudo après le @ et recherche l'utilisateur correspondant dans la table de hachage. Si l'utilisateur correspondant existe, le message lui est envoyé. Dans le cas contraire, il renvoie un message d'erreur à l'expéditeur.
+Lorsque le serveur détecte qu'un message commence par le symbole `@`, il essaie d'isoler le champ de pseudo après le `@` et recherche l'utilisateur correspondant dans le Hashtable. Si l'utilisateur correspondant existe, le message lui est envoyé. Dans le cas contraire, il renvoie un message d'erreur à l'expéditeur.
 
 ```java
 private void unicast(String msg, String clientName) throws IOException, ClassNotFoundException {
@@ -261,12 +261,12 @@ private void unicast(String msg, String clientName) throws IOException, ClassNot
 
 #### 2.4.1 “EXIT” indiqué par le client
 
-Si l'utilisateur tape EXIT, la connexion est déconnectée et le processus client se termine.
-Le serveur reçoit le message EXIT, déconnecte le socket et envoie CLIENT_EXIT au client pour lui permettre de se déconnecter avant de tuer le thread. La raison pour laquelle le serveur se déconnecte en premier est de rendre la suppression des entrées de Hashtable et le terminaison des threads plus stable et sécurisé.
+Si l'utilisateur tape `EXIT`, la connexion est déconnectée et le processus client se termine.
+Le serveur reçoit le message EXIT, déconnecte le socket et envoie `CLIENT_EXIT` au client pour lui permettre de se déconnecter avant de tuer le thread. La raison pour laquelle le serveur se déconnecte en premier est de rendre la suppression des entrées de Hashtable et le terminaison des threads plus stable et sécurisé.
 
 ##### Serveur
 
-Le thread du serveur reçoit le jeton et exécute alors la méthode exit pour terminer le thread du serveur. Un EXIT_ACK sera envoyé du serveur au client pour lui confirmer l’exit, ce qui permet à ce dernier de se déconnecter.
+Le thread du serveur reçoit le jeton et exécute alors la méthode exit pour terminer le thread du serveur. Un `EXIT_ACK` sera envoyé du serveur au client pour lui confirmer l’exit, ce qui permet à ce dernier de se déconnecter.
 
 ```java
 if (msg.startsWith(String.valueOf(BasicMsg.EXIT))) {
@@ -278,7 +278,7 @@ if (msg.startsWith(String.valueOf(BasicMsg.EXIT))) {
 
 ##### Client
 
-Le thread reçoit CLIENT_EXIT du serveur, modifie l'indicateur et quitte le thread
+Le thread reçoit `CLIENT_EXIT` du serveur, modifie l'indicateur et quitte le thread
 
 ```java
 if (msg.startsWith(Ack.CLIENT_EXIT.toString())) {
@@ -290,13 +290,13 @@ if (msg.startsWith(Ack.CLIENT_EXIT.toString())) {
 
 #### 2.4.2 Appel système
 
-Notre processus peut-il se terminer en toute sécurité si le système d'exploitation envoie un signal SIGINT au processus client ou au processus serveur ?
+Notre processus peut-il se terminer en toute sécurité si le système d'exploitation envoie un signal `SIGINT` au processus client ou au processus serveur ?
 
-Nous nous sommes demandé comment mettre en œuvre une fonction de gestion des signaux (notamment SIGINT) pour les programmes Java et, en consultant la documentation, nous avons trouvé la méthode addShutdownHook(). Cette méthode peut être configurée pour permettre au processus d'effectuer une série d'actions définies par l'utilisateur lors de la réception du signal SIGINT afin de permettre au programme de se terminer en toute sécurité avant que le processus ne soit tué.
+Nous nous sommes demandé comment mettre en œuvre une fonction de gestion des signaux (notamment `SIGINT`) pour les programmes Java et, en consultant la documentation, nous avons trouvé la méthode `addShutdownHook()`. Cette méthode peut être configurée pour permettre au processus d'effectuer une série d'actions définies par l'utilisateur lors de la réception du signal `SIGINT` afin de permettre au programme de se terminer en toute sécurité avant que le processus ne soit tué.
 
 ##### Serveur
 
-Le processus côté serveur diffuse un jeton EXIT à la réception du signal SIGINT pour informer tous les clients que le serveur est sur le point de s'arrêter.
+Le processus côté serveur diffuse un jeton `EXIT` à la réception du signal SIGINT pour informer tous les clients que le serveur est sur le point de s'arrêter.
 
 ```java
 // handler called on Control-C pressed
@@ -312,7 +312,7 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 }));
 ```
 
-Après avoir reçu ce jeton, le client attribue la valeur true à l'indicateur closed et effectue une opération d'arrêt exit(). Contrairement à la saisie de EXIT pour sortir du côté client, nous choisissons de sortir directement du processus client plutôt que de nous assurer que le serveur est d'abord arrêté. En effet, il est inutile de maintenir une déconnexion normale de la socket côté serveur et de supprimer les entrées du Hashtable à ce stade.
+Après avoir reçu ce jeton, le client attribue la valeur true à l'indicateur closed et effectue une opération d'arrêt `exit()`. Contrairement à la saisie de EXIT pour sortir du côté client, nous choisissons de sortir directement du processus client plutôt que de nous assurer que le serveur est d'abord arrêté. En effet, il est inutile de maintenir une déconnexion normale de la socket côté serveur et de supprimer les entrées du Hashtable à ce stade.
 ```java
 } else if (msg.startsWith(BasicMsg.EXIT.toString())) {
     // Si le serveur a quitté la conversation, quitter le boucle et terminer le programme
@@ -323,7 +323,7 @@ Après avoir reçu ce jeton, le client attribue la valeur true à l'indicateur c
 
 ##### Client
 
-Avant que le processus ne soit tué, un jeton EXIT est envoyé au serveur pour l'informer qu'il doit libérer le thread serveur correspondant (de la même manière que le Client Exit mentionné plus haut). Les threads locaux n'ont pas besoin d'être gérés. Lorsque le processus est tué, les threads locaux et les sockets sont également libérés.
+Avant que le processus ne soit tué, un jeton `EXIT` est envoyé au serveur pour l'informer qu'il doit libérer le thread serveur correspondant (de la même manière que le Client Exit mentionné plus haut). Les threads locaux n'ont pas besoin d'être gérés. Lorsque le processus est tué, les threads locaux et les sockets sont également libérés.
 
 ```java
 // handler called on Control-C pressed
@@ -343,7 +343,7 @@ Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
 Les réseaux sont fragiles et les connexions instables créent de l'incertitude dans les systèmes client-serveur. Les programmes existants, qui ne sont pas en mesure de connaître les déconnexions du réseau pour les raisons suivantes :
 
-1. Le serveur capture les messages de l'utilisateur à l'aide de l'objet InputStream de la socket, qui n'est géré que par un seul thread par socket, et InputStream est bloquant. Si le réseau est déconnecté, aucune nouvelle donnée ne sera transférée dans le flux et le thread côté serveur sera bloqué sur la méthode de lecture de InputStream et aucune exception ne sera levée (cela signifie également qu'un nouveau thread doit être créé pour surveiller les dépassements de délai !) Le diagramme ci-dessous montre où le thread côté serveur est bloqué
+1. Le serveur capture les messages de l'utilisateur à l'aide de l'objet `InputStream` de la socket, qui n'est géré que par un seul thread par socket, et `InputStream` est bloquant. Si le réseau est déconnecté, aucune nouvelle donnée ne sera transférée dans le flux et le thread côté serveur sera bloqué sur la méthode de lecture de `InputStream` et aucune exception ne sera levée (cela signifie également qu'un nouveau thread doit être créé pour surveiller les dépassements de délai !) Le diagramme ci-dessous montre où le thread côté serveur est bloqué
 
 ```java
 private String readMessage() throws IOException {
@@ -411,15 +411,15 @@ public void run() {
 }
 ```
 
-Le thread côté serveur est bloqué par la méthode InputStream.read() et ne peut pas exécuter la fonction de détection de dépassement de délai si la connexion réseau est déconnectée (un seul thread côté serveur n'est pas suffisant).
+Le thread côté serveur est bloqué par la méthode `InputStream.read()` et ne peut pas exécuter la fonction de détection de dépassement de délai si la connexion réseau est déconnectée (un seul thread côté serveur n'est pas suffisant).
 
 ##### Idée 2 : NIO (Java NewIO) remplace IO (à essayer)
 
-Puisque InputStream et OutPutStream sont bloquants, existe-t-il un flux non bloquant en Java ? En recherchant les informations pertinentes, nous avons découvert que nous pouvons utiliser New IO pour implémenter une IO non bloquante, remplaçant l'IO bloquante
+Puisque `InputStream` et `OutPutStream` sont bloquants, existe-t-il un flux non bloquant en Java ? En recherchant les informations pertinentes, nous avons découvert que nous pouvons utiliser `New IO` pour implémenter une IO non bloquante, remplaçant l'IO bloquante
 
 Cependant, l'IO non bloquante occupera le système et consommera beaucoup de ressources CPU, et si l'horloge de sommeil est réglée pour laisser le thread du serveur dormir, la latence du système sera considérablement augmentée.
 
-Les systèmes de chat en direct sont caractérisés par le désir d'une forte concurrence et d'une faible latence, et une forte concurrence signifie que les ressources de l'unité centrale sont un goulot d'étranglement pour les performances du système. Aucune de ces caractéristiques n'est satisfaite par NIO, c'est pourquoi nous n'utilisons pas NIO.
+Les systèmes de chat en direct sont caractérisés par le désir d'une forte concurrence et d'une faible latence, et une forte concurrence signifie que les ressources de l'unité centrale sont un goulot d'étranglement pour les performances du système. Aucune de ces caractéristiques n'est satisfaite par `NIO`, c'est pourquoi nous n'utilisons pas `NIO`.
 
 <div STYLE="page-break-after: always;"></div>
 
@@ -446,7 +446,7 @@ public void run() {
 }
 ```
 
-Le processus de communication sur le serveur met à jour l'horodatage (met à jour le dictionnaire threadToLastHeartBeat, qui est visible par tous les threads sur le serveur) à la réception du paquet heartbeat. En même temps, un ACK de paquet heartbeat est envoyé au client.
+Le processus de communication sur le serveur met à jour l'horodatage (met à jour le dictionnaire `threadToLastHeartBeat`, qui est visible par tous les threads sur le serveur) à la réception du paquet heartbeat. En même temps, un ACK de paquet heartbeat est envoyé au client.
 
 ```java
 else if (msg.startsWith(String.valueOf(BasicMsg.HEART_BEAT))) {
@@ -466,7 +466,7 @@ else if (msg.startsWith(String.valueOf(BasicMsg.HEART_BEAT))) {
     }
 ```
 
-Le démon TimeOutChecker du client vérifie régulièrement si la différence entre l'horodatage et l'heure actuelle est trop importante. S'il n'y parvient pas, le client est quitté.
+Le démon `TimeOutChecker` du client vérifie régulièrement si la différence entre l'horodatage et l'heure actuelle est trop importante. S'il n'y parvient pas, le client est quitté.
 
 ```java
 synchronized (lastHeartBeat) {
@@ -478,7 +478,7 @@ synchronized (lastHeartBeat) {
 }
 ```
 
-Le démon TimeOutChecker côté serveur parcourt périodiquement le Hashtable socketToLastHeartBeat et se déconnecte si la différence entre l'horodatage et l'heure actuelle est trop importante. Jusqu'à présent, nous avons utilisé les paquets de battements de cœur pour détecter les déconnexions du réseau en mettant en place un thread démon.
+Le démon `TimeOutChecker` côté serveur parcourt périodiquement le Hashtable `socketToLastHeartBeat` et se déconnecte si la différence entre l'horodatage et l'heure actuelle est trop importante. Jusqu'à présent, nous avons utilisé les paquets de battements de cœur pour détecter les déconnexions du réseau en mettant en place un thread démon.
 
 ```java
 public void run() {
@@ -508,15 +508,15 @@ Côté du serveur, nous avons besoin de :
 - Parcourir toutes les sockets (broadcast, tuer tous les threads en quittant)
 - Rechercher le nom d'utilisateur de la socket par socket
 - Vérification des renommages
-- En outre, en raison de l'environnement multithread, le stockage de la chaîne de socket et de nom d'utilisateur doit également être sûr pour les threads. Nous avons choisi d'utiliser Hashtable (Java Platform SE 8) pour stocker l'objet socket. La complexité temporelle de l'interrogation du nom d'utilisateur via l'objet socket est O(1), la complexité temporelle du parcours est O(N) et la complexité spatiale est O(N).
+- En outre, en raison de l'environnement multithread, le stockage de la chaîne de socket et de nom d'utilisateur doit également être sûr pour les threads. Nous avons choisi d'utiliser Hashtable (Java Platform SE 8) pour stocker l'objet socket. La complexité temporelle de l'interrogation du nom d'utilisateur via l'objet socket est `O(1)`, la complexité temporelle du parcours est `O(N)` et la complexité spatiale est `O(N)`.
 
 ```java
 private static final Hashtable<SocketThread, String> socketThreadToID = new Hashtable<>();
 ```
 
-Question complémentaire : Peut-on réduire la complexité temporelle de la vérification du nom d'utilisateur à O(1) ?
+Question complémentaire : Peut-on réduire la complexité temporelle de la vérification du nom d'utilisateur à `O(1)` ?
 
-Pouvons-nous maintenir un ensemble de hachage supplémentaire pour stocker le nom de l'utilisateur de sorte que la complexité temporelle de la vérification de doublon soit O(1), étant donné qu'il y a beaucoup de mémoire du côté du serveur ? Malheureusement, la réponse est non, car les threads HashSet ne sont pas sécurisés.
+Pouvons-nous maintenir un ensemble de hachage supplémentaire pour stocker le nom de l'utilisateur de sorte que la complexité temporelle de la vérification de doublon soit `O(1)`, étant donné qu'il y a beaucoup de mémoire du côté du serveur ? Malheureusement, la réponse est non, car les threads HashSet ne sont pas sécurisés.
 
 #### 2.5.2 Bloc de synchronisation
 
@@ -629,7 +629,7 @@ public enum BasicMsg {
 
 ##### Client
 
-En supposant que le réseau entre le client et le serveur soit déconnecté, après un cycle de paquets de heartbeat, le thread TimeOutChecker du client exécutera automatiquement la fonction de sortie et quittera le processus.
+En supposant que le réseau entre le client et le serveur soit déconnecté, après un cycle de paquets de heartbeat, le thread `TimeOutChecker` du client exécutera automatiquement la fonction de sortie et quittera le processus.
 
 ![img.png](doc/img/img12.png)
 
