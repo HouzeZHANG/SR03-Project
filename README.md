@@ -10,6 +10,61 @@
 - Ahmed Lounis
 - Cédric Martinet
 
+<!-- <div STYLE="page-break-after: always;"></div> -->
+
+##  Sommaire
+
+- [SR03 Devoir 1 Socket Rapport](#sr03-devoir-1-socket-rapport)
+  - [Membres du Projet](#membres-du-projet)
+  - [Encadrants](#encadrants)
+  - [Sommaire](#sommaire)
+  - [1. Contexte](#1-contexte)
+  - [2. Conception et réalisation](#2-conception-et-réalisation)
+    - [2.1 UML](#21-uml)
+      - [Serveur](#serveur)
+      - [Client](#client)
+    - [2.2 Établissement de connexion](#22-établissement-de-connexion)
+    - [2.3 Chat](#23-chat)
+      - [2.3.1 Broadcast](#231-broadcast)
+      - [2.3.2 Unicast](#232-unicast)
+    - [2.4 Fermeture et Exception](#24-fermeture-et-exception)
+      - [2.4.1 “EXIT” indiqué par le client](#241-exit-indiqué-par-le-client)
+        - [Serveur](#serveur-1)
+        - [Client](#client-1)
+      - [2.4.2 Appel système](#242-appel-système)
+        - [Serveur](#serveur-2)
+        - [Client](#client-2)
+      - [2.4.3 Exception dans le cadre d’exécution distribuée](#243-exception-dans-le-cadre-dexécution-distribuée)
+        - [Présentation du problème](#présentation-du-problème)
+        - [Idées de mise en œuvre du pack Heartbeat et comparaison](#idées-de-mise-en-œuvre-du-pack-heartbeat-et-comparaison)
+        - [Idée 1 : Combiner l'envoi et la réception de paquets heartbeat sur un thread existant (échec)](#idée-1--combiner-lenvoi-et-la-réception-de-paquets-heartbeat-sur-un-thread-existant-échec)
+        - [Idée 2 : NIO (Java NewIO) remplace IO (à essayer)](#idée-2--nio-java-newio-remplace-io-à-essayer)
+        - [Idée 3 : Thread démon (mise en œuvre réussie)](#idée-3--thread-démon-mise-en-œuvre-réussie)
+    - [2.5 Stratégie d'amélioration de la performance](#25-stratégie-damélioration-de-la-performance)
+      - [2.5.1 Structure de données](#251-structure-de-données)
+      - [2.5.2 Bloc de synchronisation](#252-bloc-de-synchronisation)
+    - [2.6 Méthodes de génie logiciel](#26-méthodes-de-génie-logiciel)
+      - [2.6.1. Transfert de jetons](#261-transfert-de-jetons)
+  - [3. Exécution](#3-exécution)
+    - [3.1. Environnement de essai](#31-environnement-de-essai)
+      - [Serveur](#serveur-3)
+      - [Client](#client-3)
+    - [3.2. Broadcast et Unicast](#32-broadcast-et-unicast)
+      - [3.2.1. Broadcast](#321-broadcast)
+      - [3.2.2. Unicast](#322-unicast)
+    - [3.3. Exception](#33-exception)
+      - [3.3.1. Sortie normale avec EXIT](#331-sortie-normale-avec-exit)
+        - [Client](#client-4)
+        - [Serveur](#serveur-4)
+      - [3.3.2. Sortie anormale avec CTRL+C](#332-sortie-anormale-avec-ctrlc)
+        - [Client](#client-5)
+        - [Serveur](#serveur-5)
+      - [3.3.3. Exception du réseau](#333-exception-du-réseau)
+        - [Client](#client-6)
+        - [Serveur](#serveur-6)
+
+<div STYLE="page-break-after: always;"></div>
+
 ## 1. Contexte
 
 Le devoir 1 de l’UV SR03 consiste à développer une application de chat Client/Serveur via les sockets qui permet d’organiser une discussion publique entre un ensemble de participants dans laquelle les messages sont de type broadcast (et éventuellement une discussion privée de type unicast)
