@@ -48,20 +48,21 @@
     - [2.6 Méthodes de génie logiciel](#26-méthodes-de-génie-logiciel)
       - [2.6.1. Transfert de jetons](#261-transfert-de-jetons)
   - [3. Exécution](#3-exécution)
-    - [3.1. Environnement de essai](#31-environnement-de-essai)
+    - [3.1. Compilation et exécution](#31-compilation-et-exécution)
+    - [3.2. Environnement de essai](#32-environnement-de-essai)
       - [Serveur](#serveur-3)
       - [Client](#client-3)
-    - [3.2. Broadcast et Unicast](#32-broadcast-et-unicast)
-      - [3.2.1. Broadcast](#321-broadcast)
-      - [3.2.2. Unicast](#322-unicast)
-    - [3.3. Exception](#33-exception)
-      - [3.3.1. Sortie normale avec EXIT](#331-sortie-normale-avec-exit)
+    - [3.3. Broadcast et Unicast](#33-broadcast-et-unicast)
+      - [3.3.1. Broadcast](#331-broadcast)
+      - [3.3.2. Unicast](#332-unicast)
+    - [3.4. Exception](#34-exception)
+      - [3.4.1. Sortie normale avec EXIT](#341-sortie-normale-avec-exit)
         - [Client](#client-4)
         - [Serveur](#serveur-4)
-      - [3.3.2. Sortie anormale avec CTRL+C](#332-sortie-anormale-avec-ctrlc)
+      - [3.4.2. Sortie anormale avec CTRL+C](#342-sortie-anormale-avec-ctrlc)
         - [Client](#client-5)
         - [Serveur](#serveur-5)
-      - [3.3.3. Exception du réseau](#333-exception-du-réseau)
+      - [3.4.3. Exception du réseau](#343-exception-du-réseau)
         - [Client](#client-6)
         - [Serveur](#serveur-6)
 
@@ -563,7 +564,29 @@ public enum BasicMsg {
 
 ## 3. Exécution
 
-### 3.1. Environnement de essai
+### 3.1. Compilation et exécution
+
+Compiler le projet
+```shell
+cd [base directory]
+git clone https://gitlab.com/KevinShu/sr03-devoir1.git
+cd sr03-devoir1
+javac Client/* EnumLib/* Server/*
+```
+
+Demarrer le serveur
+```shell
+cd [base directory]
+java Server.ServeurChat [port number]
+```
+
+Demarrer le client
+```shell
+cd [base directory]
+java Client.ClientChat [server ip] [port number]
+```
+
+### 3.2. Environnement de essai
 
 #### Serveur
 
@@ -582,24 +605,26 @@ public enum BasicMsg {
 
 ![img.png](doc/img/img4.png)
 
+
+
 <div STYLE="page-break-after: always;"></div>
 
-### 3.2. Broadcast et Unicast
+### 3.3. Broadcast et Unicast
 
-#### 3.2.1. Broadcast
+#### 3.3.1. Broadcast
 
 ![img.png](doc/img/img5.png)
 ![img.png](doc/img/img6.png)
 
-#### 3.2.2. Unicast
+#### 3.3.2. Unicast
 
 ![img.png](doc/img/img7.png)
 
 <div STYLE="page-break-after: always;"></div>
 
-### 3.3. Exception
+### 3.4. Exception
 
-#### 3.3.1. Sortie normale avec EXIT
+#### 3.4.1. Sortie normale avec EXIT
 
 ##### Client
 
@@ -611,7 +636,7 @@ public enum BasicMsg {
 
 <div STYLE="page-break-after: always;"></div>
 
-#### 3.3.2. Sortie anormale avec CTRL+C
+#### 3.4.2. Sortie anormale avec CTRL+C
 
 ##### Client
 
@@ -624,7 +649,7 @@ public enum BasicMsg {
 
 <div STYLE="page-break-after: always;"></div>
 
-#### 3.3.3. Exception du réseau
+#### 3.4.3. Exception du réseau
 
 ##### Client
 
